@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Usuários | PlanejaGCM</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js" defer></script>
+  <script src="/js/usuarios.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">PG</div>
+        <div>
+          <h2>PlanejaGCM</h2>
+          <small>Guarda Civil Municipal de Guarulhos</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <span data-user-name>Usuário</span>
+          <span data-user-profile>Perfil</span>
+        </div>
+        <button class="btn btn-secondary" data-logout>Sair</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <nav>
+          <a class="nav-link" href="/dashboard.html">Dashboard</a>
+          <a class="nav-link" href="/projetos.html">Projetos</a>
+          <a class="nav-link" href="/ideias.html">Ideias</a>
+          <a class="nav-link dev-only" href="/usuarios.html">Usuários</a>
+          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1>Usuários</h1>
+            <p>Listagem básica dos usuários cadastrados no banco.</p>
+          </div>
+        </div>
+
+        <div id="usuariosMensagem" class="message"></div>
+
+        <section class="card panel">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Usuário</th>
+                  <th>Perfil</th>
+                  <th>Ativo</th>
+                  <th>Criado em</th>
+                </tr>
+              </thead>
+              <tbody id="usuariosTabela"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

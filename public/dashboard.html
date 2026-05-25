@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | PlanejaGCM</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js" defer></script>
+  <script src="/js/dashboard.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">PG</div>
+        <div>
+          <h2>PlanejaGCM</h2>
+          <small>Guarda Civil Municipal de Guarulhos</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <span data-user-name>Usuário</span>
+          <span data-user-profile>Perfil</span>
+        </div>
+        <button class="btn btn-secondary" data-logout>Sair</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <nav>
+          <a class="nav-link" href="/dashboard.html">Dashboard</a>
+          <a class="nav-link" href="/projetos.html">Projetos</a>
+          <a class="nav-link" href="/ideias.html">Ideias</a>
+          <a class="nav-link dev-only" href="/usuarios.html">Usuários</a>
+          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p id="dashboardSubtitulo">Acompanhamento geral dos projetos e módulos.</p>
+          </div>
+        </div>
+
+        <section id="cardsResumo" class="grid cards-grid"></section>
+
+        <section class="grid two-columns" style="margin-top: 16px;">
+          <div class="card panel">
+            <div class="panel-header"><h2>Próximos módulos a vencer</h2></div>
+            <div id="proximosPrazos" class="list"></div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-header"><h2>Módulos atrasados</h2></div>
+            <div id="modulosAtrasados" class="list"></div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-header"><h2>Últimos projetos criados</h2></div>
+            <div id="ultimosProjetos" class="list"></div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-header"><h2>Últimas ideias enviadas</h2></div>
+            <div id="ultimasIdeias" class="list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

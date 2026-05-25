@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalhe do projeto | PlanejaGCM</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js" defer></script>
+  <script src="/js/projeto-detalhe.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">PG</div>
+        <div>
+          <h2>PlanejaGCM</h2>
+          <small>Guarda Civil Municipal de Guarulhos</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <span data-user-name>Usuário</span>
+          <span data-user-profile>Perfil</span>
+        </div>
+        <button class="btn btn-secondary" data-logout>Sair</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <nav>
+          <a class="nav-link" href="/dashboard.html">Dashboard</a>
+          <a class="nav-link" href="/projetos.html">Projetos</a>
+          <a class="nav-link" href="/ideias.html">Ideias</a>
+          <a class="nav-link dev-only" href="/usuarios.html">Usuários</a>
+          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1 id="projetoTitulo">Projeto</h1>
+            <p id="projetoDescricao" class="muted"></p>
+          </div>
+          <a class="btn btn-secondary" href="/projetos.html">Voltar</a>
+        </div>
+
+        <section class="detail-grid">
+          <div class="card panel">
+            <div class="panel-header"><h2>Dados principais</h2></div>
+            <div id="projetoDados" class="meta-list"></div>
+            <div style="margin-top: 16px;">
+              <div class="panel-header"><h3>Progresso</h3><strong id="progressoTexto">0%</strong></div>
+              <div class="progress"><div id="progressoBarra" class="progress-bar"></div></div>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-header">
+              <h2>Módulos</h2>
+              <button id="novoModuloBtn" class="btn btn-primary dev-only" type="button">Novo módulo</button>
+            </div>
+            <div id="resumoModulos" class="list"></div>
+          </div>
+        </section>
+
+        <section id="moduloFormPanel" class="card panel hidden" style="margin-top: 16px;">
+          <div class="panel-header">
+            <h2 id="moduloFormTitulo">Novo módulo</h2>
+            <button id="fecharModuloForm" class="btn btn-secondary" type="button">Fechar</button>
+          </div>
+
+          <form id="moduloForm" class="form-grid">
+            <input type="hidden" id="moduloId" name="id">
+            <div class="field span-2">
+              <label for="moduloNome">Nome</label>
+              <input id="moduloNome" name="nome" required>
+            </div>
+            <div class="field">
+              <label for="moduloResponsavel">Responsável</label>
+              <select id="moduloResponsavel" name="responsavel_id"></select>
+            </div>
+            <div class="field">
+              <label for="moduloStatus">Status</label>
+              <select id="moduloStatus" name="status" required>
+                <option value="NAO_INICIADO">Não iniciado</option>
+                <option value="EM_DESENVOLVIMENTO">Em desenvolvimento</option>
+                <option value="AGUARDANDO_VALIDACAO">Aguardando validação</option>
+                <option value="EM_AJUSTE">Em ajuste</option>
+                <option value="CONCLUIDO">Concluído</option>
+                <option value="PAUSADO">Pausado</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="moduloPrioridade">Prioridade</label>
+              <select id="moduloPrioridade" name="prioridade" required>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA" selected>Média</option>
+                <option value="ALTA">Alta</option>
+                <option value="URGENTE">Urgente</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="moduloDataInicio">Data de início</label>
+              <input id="moduloDataInicio" name="data_inicio" type="date">
+            </div>
+            <div class="field">
+              <label for="moduloDataFim">Data fim prevista</label>
+              <input id="moduloDataFim" name="data_fim_prevista" type="date">
+            </div>
+            <div class="field">
+              <label for="moduloDataConclusao">Data de conclusão</label>
+              <input id="moduloDataConclusao" name="data_conclusao" type="date">
+            </div>
+            <div class="field span-3">
+              <label for="moduloDescricao">Descrição</label>
+              <textarea id="moduloDescricao" name="descricao"></textarea>
+            </div>
+            <div class="field span-3">
+              <label for="moduloObservacoes">Observações</label>
+              <textarea id="moduloObservacoes" name="observacoes"></textarea>
+            </div>
+            <div class="actions span-3">
+              <button class="btn btn-primary" type="submit">Salvar módulo</button>
+              <button id="cancelarModuloForm" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+          <div id="moduloMensagem" class="message"></div>
+        </section>
+
+        <section class="card panel" style="margin-top: 16px;">
+          <div class="panel-header"><h2>Lista de módulos</h2></div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Módulo</th>
+                  <th>Status</th>
+                  <th>Prioridade</th>
+                  <th>Responsável</th>
+                  <th>Prazo</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="modulosTabela"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="grid two-columns" style="margin-top: 16px;">
+          <div class="card panel">
+            <div class="panel-header"><h2>Ideias relacionadas</h2></div>
+            <div id="ideiasRelacionadas" class="list"></div>
+          </div>
+          <div class="card panel dev-only">
+            <div class="panel-header"><h2>Histórico do projeto</h2></div>
+            <div id="historicoProjeto" class="list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

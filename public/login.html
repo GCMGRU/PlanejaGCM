@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | PlanejaGCM</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/auth.js" defer></script>
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand">
+      <div class="brand-mark">PG</div>
+      <div>
+        <h1>PlanejaGCM</h1>
+        <small>Planejamento de softwares internos</small>
+      </div>
+    </div>
+
+    <form id="loginForm" class="grid">
+      <div class="field">
+        <label for="usuario">Usuário</label>
+        <input id="usuario" name="usuario" autocomplete="username" required>
+      </div>
+
+      <div class="field">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Entrar</button>
+      <div id="loginMensagem" class="message" role="alert"></div>
+    </form>
+  </main>
+</body>
+</html>

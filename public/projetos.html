@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projetos | PlanejaGCM</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js" defer></script>
+  <script src="/js/projetos.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">PG</div>
+        <div>
+          <h2>PlanejaGCM</h2>
+          <small>Guarda Civil Municipal de Guarulhos</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <span data-user-name>Usuário</span>
+          <span data-user-profile>Perfil</span>
+        </div>
+        <button class="btn btn-secondary" data-logout>Sair</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <nav>
+          <a class="nav-link" href="/dashboard.html">Dashboard</a>
+          <a class="nav-link" href="/projetos.html">Projetos</a>
+          <a class="nav-link" href="/ideias.html">Ideias</a>
+          <a class="nav-link dev-only" href="/usuarios.html">Usuários</a>
+          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1>Projetos</h1>
+            <p>Cadastro e acompanhamento dos sistemas internos.</p>
+          </div>
+          <button id="novoProjetoBtn" class="btn btn-primary dev-only">Novo projeto</button>
+        </div>
+
+        <form id="filtrosProjetos" class="toolbar">
+          <div class="field">
+            <label for="busca">Buscar</label>
+            <input id="busca" name="busca" placeholder="Nome do projeto">
+          </div>
+          <div class="field">
+            <label for="statusFiltro">Status</label>
+            <select id="statusFiltro" name="status">
+              <option value="">Todos</option>
+              <option value="PLANEJADO">Planejado</option>
+              <option value="EM_DESENVOLVIMENTO">Em desenvolvimento</option>
+              <option value="EM_TESTE">Em teste</option>
+              <option value="PAUSADO">Pausado</option>
+              <option value="CONCLUIDO">Concluído</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="prioridadeFiltro">Prioridade</label>
+            <select id="prioridadeFiltro" name="prioridade">
+              <option value="">Todas</option>
+              <option value="BAIXA">Baixa</option>
+              <option value="MEDIA">Média</option>
+              <option value="ALTA">Alta</option>
+              <option value="URGENTE">Urgente</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" type="submit">Filtrar</button>
+        </form>
+
+        <section id="projetoFormPanel" class="card panel hidden">
+          <div class="panel-header">
+            <h2 id="projetoFormTitulo">Novo projeto</h2>
+            <button id="fecharProjetoForm" class="btn btn-secondary" type="button">Fechar</button>
+          </div>
+
+          <form id="projetoForm" class="form-grid">
+            <input type="hidden" name="id" id="projetoId">
+            <div class="field span-2">
+              <label for="nome">Nome</label>
+              <input id="nome" name="nome" required>
+            </div>
+            <div class="field">
+              <label for="responsavel_id">Responsável principal</label>
+              <select id="responsavel_id" name="responsavel_id"></select>
+            </div>
+            <div class="field">
+              <label for="status">Status</label>
+              <select id="status" name="status" required>
+                <option value="PLANEJADO">Planejado</option>
+                <option value="EM_DESENVOLVIMENTO">Em desenvolvimento</option>
+                <option value="EM_TESTE">Em teste</option>
+                <option value="PAUSADO">Pausado</option>
+                <option value="CONCLUIDO">Concluído</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="prioridade">Prioridade</label>
+              <select id="prioridade" name="prioridade" required>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA" selected>Média</option>
+                <option value="ALTA">Alta</option>
+                <option value="URGENTE">Urgente</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="data_inicio">Data de início</label>
+              <input id="data_inicio" name="data_inicio" type="date">
+            </div>
+            <div class="field">
+              <label for="data_fim_prevista">Data fim prevista</label>
+              <input id="data_fim_prevista" name="data_fim_prevista" type="date">
+            </div>
+            <div class="field">
+              <label for="data_conclusao">Data de conclusão</label>
+              <input id="data_conclusao" name="data_conclusao" type="date">
+            </div>
+            <div class="field span-3">
+              <label for="descricao">Descrição</label>
+              <textarea id="descricao" name="descricao"></textarea>
+            </div>
+            <div class="actions span-3">
+              <button class="btn btn-primary" type="submit">Salvar projeto</button>
+              <button id="cancelarProjetoForm" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+          <div id="projetoMensagem" class="message"></div>
+        </section>
+
+        <section class="card panel">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Projeto</th>
+                  <th>Status</th>
+                  <th>Prioridade</th>
+                  <th>Responsável</th>
+                  <th>Prazo</th>
+                  <th>Progresso</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="projetosTabela"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
