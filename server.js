@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 
 const path = require('path');
 const express = require('express');
@@ -13,6 +13,8 @@ const modulosRoutes = require('./routes/modulos.routes');
 const ideiasRoutes = require('./routes/ideias.routes');
 const usuariosRoutes = require('./routes/usuarios.routes');
 const historicoRoutes = require('./routes/historico.routes');
+const preAnaliseRoutes = require('./routes/pre-analise.routes');
+const reunioesRoutes = require('./routes/reunioes.routes');
 const { requireAuth } = require('./middleware/auth');
 
 const app = express();
@@ -65,6 +67,8 @@ app.use('/api', requireAuth, modulosRoutes);
 app.use('/api/ideias', requireAuth, ideiasRoutes);
 app.use('/api/usuarios', requireAuth, usuariosRoutes);
 app.use('/api', requireAuth, historicoRoutes);
+app.use('/api', requireAuth, preAnaliseRoutes);
+app.use('/api/reunioes', requireAuth, reunioesRoutes);
 
 app.use('/api', (req, res) => {
   res.status(404).json({
@@ -89,5 +93,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`PlanejaGCM rodando na porta ${PORT}`);
+  console.log(`PlannoDev rodando na porta ${PORT}`);
 });
+

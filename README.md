@@ -1,6 +1,6 @@
-# PlanejaGCM
+﻿# PlannoDev
 
-Sistema interno para planejamento e acompanhamento do desenvolvimento de softwares da Guarda Civil Municipal de Guarulhos.
+Sistema interno para planejamento e acompanhamento do desenvolvimento de softwares.
 
 ## Tecnologias
 
@@ -41,7 +41,7 @@ Copy-Item .env.example .env
 
 ```env
 PORT=3000
-DATABASE_URL=postgres://usuario:senha@localhost:5432/planejagcm
+DATABASE_URL=postgres://usuario:senha@localhost:5432/plannodev
 JWT_SECRET=troque_este_segredo
 NODE_ENV=development
 DB_SSL=false
@@ -62,13 +62,13 @@ DB_SSL=true
 4. Crie o banco no PostgreSQL local, caso não esteja usando Railway:
 
 ```sql
-CREATE DATABASE planejagcm;
+CREATE DATABASE plannodev;
 ```
 
 5. Rode o script de criação das tabelas:
 
 ```bash
-psql "postgres://usuario:senha@localhost:5432/planejagcm" -f db/init.sql
+psql "postgres://usuario:senha@localhost:5432/plannodev" -f db/init.sql
 ```
 
 6. Rode o seed dos usuários iniciais:
@@ -204,3 +204,4 @@ SUPERVISOR:
 - Rotas internas exigem login.
 - Rotas administrativas exigem perfil `DESENVOLVEDOR`.
 - O histórico é registrado automaticamente nas ações principais.
+

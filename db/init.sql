@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   nome VARCHAR(120) NOT NULL,
   usuario VARCHAR(80) UNIQUE NOT NULL,
   senha_hash TEXT NOT NULL,
-  perfil VARCHAR(30) NOT NULL CHECK (perfil IN ('DESENVOLVEDOR', 'SUPERVISOR')),
+  perfil VARCHAR(30) NOT NULL CHECK (perfil IN ('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN')),
   ativo BOOLEAN DEFAULT TRUE,
   criado_em TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
@@ -114,6 +114,60 @@ CREATE TABLE IF NOT EXISTS comentarios_modulo (
   comentario TEXT NOT NULL,
   criado_em TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS commits_modulo (
+  id SERIAL PRIMARY KEY,
+  modulo_id INTEGER NOT NULL REFERENCES modulos(id) ON DELETE CASCADE,
+  mensagem TEXT NOT NULL,
+  hash VARCHAR(40),
+  branch VARCHAR(100),
+  data_commit DATE,
+  registrado_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  criado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_commits_modulo_id ON commits_modulo(modulo_id);
+
+CREATE TABLE IF NOT EXISTS pre_analise (
+  id SERIAL PRIMARY KEY,
+  projeto_id INTEGER NOT NULL REFERENCES projetos(id) ON DELETE CASCADE,
+  titulo VARCHAR(200) NOT NULL,
+  conteudo TEXT NOT NULL,
+  criado_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  criado_em TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS reunioes (
+  id SERIAL PRIMARY KEY,
+  titulo VARCHAR(200) NOT NULL,
+  setor VARCHAR(120) NOT NULL,
+  assunto TEXT NOT NULL,
+  data_reuniao DATE NOT NULL,
+  horario TIME NOT NULL,
+  projeto_id INTEGER REFERENCES projetos(id) ON DELETE SET NULL,
+  modulo_id INTEGER REFERENCES modulos(id) ON DELETE SET NULL,
+  ideia_id INTEGER REFERENCES ideias(id) ON DELETE SET NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'AGENDADA' CHECK (status IN ('AGENDADA', 'CANCELADA', 'REAGENDADA', 'CONCLUIDA')),
+  relato TEXT,
+  criado_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  criado_em TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS trg_pre_analise_atualizado_em ON pre_analise;
+CREATE TRIGGER trg_pre_analise_atualizado_em
+BEFORE UPDATE ON pre_analise
+FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
+
+DROP TRIGGER IF EXISTS trg_reunioes_atualizado_em ON reunioes;
+CREATE TRIGGER trg_reunioes_atualizado_em
+BEFORE UPDATE ON reunioes
+FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
+
+CREATE INDEX IF NOT EXISTS idx_pre_analise_projeto_id ON pre_analise(projeto_id);
+CREATE INDEX IF NOT EXISTS idx_reunioes_data ON reunioes(data_reuniao DESC);
+CREATE INDEX IF NOT EXISTS idx_reunioes_status ON reunioes(status);
 
 CREATE OR REPLACE FUNCTION set_atualizado_em()
 RETURNS TRIGGER AS $$

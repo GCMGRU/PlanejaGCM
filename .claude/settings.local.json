@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(\\(Get-Item \"c:\\\\Users\\\\guilhermepelegrino\\\\Documents\\\\PlanejaGCM\\\\public\\\\dashboard.html\"\\).Length)"
+    ]
+  }
+}

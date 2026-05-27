@@ -13,7 +13,11 @@ const STATUS_LABELS = {
   ACEITA: 'Aceita',
   RECUSADA: 'Recusada',
   TRANSFORMADA_EM_MODULO: 'Transformada em módulo',
-  IMPLEMENTADA: 'Implementada'
+  IMPLEMENTADA: 'Implementada',
+  AGENDADA: 'Agendada',
+  REAGENDADA: 'Reagendada',
+  CONCLUIDA: 'Concluída',
+  CANCELADA: 'Cancelada'
 };
 
 const PRIORIDADE_LABELS = {
@@ -136,13 +140,17 @@ function formatarPrioridade(valor) {
 }
 
 function formatarPerfil(valor) {
-  return valor === 'DESENVOLVEDOR' ? 'Desenvolvedor' : 'Supervisor';
+  if (valor === 'DESENVOLVEDOR') return 'Desenvolvedor';
+  if (valor === 'SUPERVISOR') return 'Supervisor';
+  if (valor === 'ADMIN') return 'Admin';
+  return valor || '-';
 }
 
 function classeStatus(status, atrasado = false) {
   if (atrasado) return 'badge-danger';
-  if (status === 'CONCLUIDO' || status === 'IMPLEMENTADA' || status === 'ACEITA') return 'badge-success';
-  if (status === 'CANCELADO' || status === 'RECUSADA') return 'badge-danger';
+  if (status === 'CONCLUIDO' || status === 'CONCLUIDA' || status === 'IMPLEMENTADA' || status === 'ACEITA') return 'badge-success';
+  if (status === 'CANCELADO' || status === 'CANCELADA' || status === 'RECUSADA') return 'badge-danger';
+  if (status === 'REAGENDADA') return 'badge-warning';
   if (status === 'PAUSADO' || status === 'EM_TESTE' || status === 'EM_ANALISE' || status === 'AGUARDANDO_VALIDACAO' || status === 'EM_AJUSTE') return 'badge-warning';
   return 'badge-status';
 }
@@ -192,4 +200,120 @@ function preencherSelectProjetos(select, projetos, valorAtual = '') {
   select.innerHTML = '<option value="">Sem projeto</option>' + projetos
     .map((projeto) => `<option value="${projeto.id}" ${String(valorAtual) === String(projeto.id) ? 'selected' : ''}>${escapeHtml(projeto.nome)}</option>`)
     .join('');
+}
+
+function setBtnLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.textoOriginal = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span>${btn.textContent.trim()}`;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btn.dataset.textoOriginal ?? btn.innerHTML;
+    delete btn.dataset.textoOriginal;
+  }
+}
+
+function _abrirModal({ titulo, mensagem, descricao = '', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar', perigo = false, somenteOk = false }) {
+  return new Promise((resolve) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+
+    backdrop.innerHTML = `
+      <div class="modal${perigo ? ' modal-perigo' : ''}" role="dialog" aria-modal="true">
+        <div class="modal-header">
+          <h3>${escapeHtml(titulo)}</h3>
+        </div>
+        <div class="modal-body">
+          <p>${escapeHtml(mensagem)}</p>
+          ${descricao ? `<p class="muted" style="font-size:0.88rem;margin-top:4px;">${escapeHtml(descricao)}</p>` : ''}
+        </div>
+        <div class="modal-footer">
+          ${somenteOk ? '' : `<button class="btn btn-secondary modal-btn-cancelar">${escapeHtml(cancelarTexto)}</button>`}
+          <button class="btn ${perigo ? 'btn-danger' : 'btn-primary'} modal-btn-confirmar">${escapeHtml(somenteOk ? 'OK' : confirmarTexto)}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+
+    function fechar(valor) {
+      backdrop.style.animation = 'modal-fade-out 120ms ease forwards';
+      setTimeout(() => { backdrop.remove(); resolve(valor); }, 120);
+    }
+
+    backdrop.querySelector('.modal-btn-confirmar').addEventListener('click', () => fechar(true));
+    backdrop.querySelector('.modal-btn-cancelar')?.addEventListener('click', () => fechar(false));
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) fechar(false); });
+
+    function onKeydown(e) {
+      if (e.key === 'Escape') { fechar(false); document.removeEventListener('keydown', onKeydown); }
+      if (somenteOk && e.key === 'Enter') { fechar(true); document.removeEventListener('keydown', onKeydown); }
+    }
+    document.addEventListener('keydown', onKeydown);
+  });
+}
+
+function confirmar(mensagem, opcoes = {}) {
+  return _abrirModal({
+    titulo: opcoes.titulo || 'Confirmar',
+    mensagem,
+    descricao: opcoes.descricao || '',
+    confirmarTexto: opcoes.confirmar || 'Confirmar',
+    perigo: opcoes.perigo || false
+  });
+}
+
+function alertar(mensagem, opcoes = {}) {
+  return _abrirModal({
+    titulo: opcoes.titulo || 'Atenção',
+    mensagem,
+    somenteOk: true,
+    perigo: opcoes.perigo || false
+  });
+}
+
+function mostrarSenhaGerada(senha, titulo = 'Senha gerada') {
+  return new Promise((resolve) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+
+    backdrop.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+          <h3>${escapeHtml(titulo)}</h3>
+        </div>
+        <div class="modal-body">
+          <p>Anote a senha abaixo. <strong>Ela não será exibida novamente.</strong></p>
+          <div class="senha-reveal">
+            <code>${escapeHtml(senha)}</code>
+            <button class="btn btn-secondary btn-small senha-copiar-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary modal-btn-ok">Entendido</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+
+    function fechar() {
+      backdrop.style.animation = 'modal-fade-out 120ms ease forwards';
+      setTimeout(() => { backdrop.remove(); resolve(); }, 120);
+    }
+
+    backdrop.querySelector('.modal-btn-ok').addEventListener('click', fechar);
+
+    backdrop.querySelector('.senha-copiar-btn').addEventListener('click', async (e) => {
+      try {
+        await navigator.clipboard.writeText(senha);
+        e.target.textContent = 'Copiado!';
+        setTimeout(() => { e.target.textContent = 'Copiar'; }, 2000);
+      } catch {
+        // sem permissão de clipboard
+      }
+    });
+  });
 }

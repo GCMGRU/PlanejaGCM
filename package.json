@@ -1,7 +1,7 @@
-{
-  "name": "planejagcm",
+﻿{
+  "name": "plannodev",
   "version": "1.0.0",
-  "description": "Sistema interno para planejamento e acompanhamento de softwares da GCM Guarulhos.",
+  "description": "Sistema interno para planejamento e acompanhamento de softwares.",
   "main": "server.js",
   "engines": {
     "node": ">=18"
@@ -32,3 +32,4 @@
     "nodemon": "^3.1.9"
   }
 }
+

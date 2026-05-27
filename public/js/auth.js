@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     mensagem.className = 'message';
     mensagem.textContent = '';
 
+    const btn = event.submitter ?? form.querySelector('[type="submit"]');
+    const textoOriginal = btn?.innerHTML;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span>Entrando…';
+    }
+
     const dados = Object.fromEntries(new FormData(form).entries());
 
     try {
@@ -35,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       mensagem.textContent = err.message;
       mensagem.className = 'message show error';
+      if (btn) { btn.disabled = false; btn.innerHTML = textoOriginal; }
     }
   });
 });

@@ -45,8 +45,36 @@ function configurarEventosDetalhe() {
     if (!modulo) return;
 
     if (botao.dataset.action === 'editar') abrirFormModulo(modulo);
-    if (botao.dataset.action === 'excluir') await excluirModulo(modulo);
-    if (botao.dataset.action === 'concluir') await concluirModulo(modulo);
+    if (botao.dataset.action === 'excluir') await excluirModulo(modulo, botao);
+    if (botao.dataset.action === 'concluir') await concluirModulo(modulo, botao);
+  });
+
+  document.getElementById('novoCommitBtn')?.addEventListener('click', () => abrirFormCommit());
+  document.getElementById('cancelarCommitForm').addEventListener('click', fecharFormCommit);
+  document.getElementById('commitForm').addEventListener('submit', registrarCommit);
+  document.getElementById('commitModuloSelect').addEventListener('change', () => {
+    const moduloId = document.getElementById('commitModuloSelect').value;
+    if (moduloId) carregarCommits(Number(moduloId));
+  });
+
+  document.getElementById('commitLista').addEventListener('click', async (event) => {
+    const botao = event.target.closest('[data-action="excluir-commit"]');
+    if (!botao) return;
+    const id = Number(botao.dataset.id);
+    const moduloId = Number(document.getElementById('commitModuloSelect').value);
+    await excluirCommit(id, moduloId, botao);
+  });
+
+  document.getElementById('novoRelatorioBtn')?.addEventListener('click', () => abrirFormRelatorio());
+  document.getElementById('cancelarRelatorioForm').addEventListener('click', fecharFormRelatorio);
+  document.getElementById('relatorioForm').addEventListener('submit', salvarRelatorio);
+
+  document.getElementById('relatorioLista').addEventListener('click', async (event) => {
+    const botao = event.target.closest('[data-action]');
+    if (!botao) return;
+    const id = Number(botao.dataset.id);
+    if (botao.dataset.action === 'editar-relatorio') editarRelatorio(id);
+    if (botao.dataset.action === 'excluir-relatorio') await excluirRelatorio(id, botao);
   });
 }
 
@@ -63,6 +91,8 @@ async function carregarTudo() {
   renderizarProjeto();
   renderizarModulos();
   renderizarIdeias(ideiasResponse.data);
+  preencherSelectCommitModulo();
+  await carregarRelatorios();
 
   if (usuarioLogado.perfil === 'DESENVOLVEDOR') {
     const historicoResponse = await apiFetch(`/api/projetos/${projetoId}/historico`);
@@ -212,6 +242,9 @@ async function salvarModulo(event) {
   event.preventDefault();
   limparMensagem('moduloMensagem');
 
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
   const dados = formParaObjeto(event.target);
   const id = dados.id;
   delete dados.id;
@@ -229,21 +262,33 @@ async function salvarModulo(event) {
     setTimeout(fecharFormModulo, 700);
   } catch (err) {
     mostrarMensagem('moduloMensagem', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
-async function excluirModulo(modulo) {
-  if (!confirm(`Excluir o módulo "${modulo.nome}"?`)) return;
+async function excluirModulo(modulo, btn) {
+  const ok = await confirmar(`Excluir o módulo "${modulo.nome}"?`, {
+    titulo: 'Confirmar exclusão',
+    descricao: 'Esta ação não pode ser desfeita.',
+    confirmar: 'Excluir',
+    perigo: true
+  });
+  if (!ok) return;
 
+  setBtnLoading(btn, true);
   try {
     await apiFetch(`/api/modulos/${modulo.id}`, { method: 'DELETE' });
     await carregarTudo();
   } catch (err) {
-    alert(err.message);
+    await alertar(err.message, { titulo: 'Erro ao excluir módulo' });
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
-async function concluirModulo(modulo) {
+async function concluirModulo(modulo, btn) {
+  setBtnLoading(btn, true);
   try {
     await apiFetch(`/api/modulos/${modulo.id}`, {
       method: 'PUT',
@@ -251,6 +296,239 @@ async function concluirModulo(modulo) {
     });
     await carregarTudo();
   } catch (err) {
-    alert(err.message);
+    await alertar(err.message, { titulo: 'Erro ao concluir módulo' });
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+function preencherSelectCommitModulo() {
+  const select = document.getElementById('commitModuloSelect');
+  const btn = document.getElementById('novoCommitBtn');
+
+  if (!modulos.length) {
+    select.innerHTML = '<option value="">Nenhum módulo cadastrado</option>';
+    btn?.classList.add('hidden');
+    document.getElementById('commitLista').innerHTML = '<div class="empty">Nenhum módulo cadastrado neste projeto.</div>';
+    return;
+  }
+
+  const valorAtual = select.value;
+  select.innerHTML = modulos
+    .map((m) => `<option value="${m.id}" ${String(valorAtual) === String(m.id) ? 'selected' : ''}>${escapeHtml(m.nome)}</option>`)
+    .join('');
+
+  if (usuarioLogado.perfil === 'DESENVOLVEDOR') {
+    btn?.classList.remove('hidden');
+  }
+
+  const moduloSelecionado = valorAtual && modulos.find((m) => String(m.id) === valorAtual)
+    ? Number(valorAtual)
+    : modulos[0].id;
+
+  select.value = moduloSelecionado;
+  carregarCommits(moduloSelecionado);
+}
+
+async function carregarCommits(moduloId) {
+  try {
+    const response = await apiFetch(`/api/modulos/${moduloId}/commits`);
+    renderizarCommits(response.data);
+  } catch (err) {
+    document.getElementById('commitLista').innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderizarCommits(commits) {
+  const alvo = document.getElementById('commitLista');
+
+  if (!commits.length) {
+    alvo.innerHTML = '<div class="empty">Nenhum commit registrado para este módulo.</div>';
+    return;
+  }
+
+  alvo.innerHTML = commits.map((c) => `
+    <article class="list-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <h3>${escapeHtml(c.mensagem)}</h3>
+          <p class="muted">
+            ${c.hash ? `<code>${escapeHtml(c.hash)}</code> · ` : ''}
+            ${c.branch ? `branch <strong>${escapeHtml(c.branch)}</strong> · ` : ''}
+            ${c.data_commit ? formatarData(c.data_commit) : formatarDataHora(c.criado_em)}
+            ${c.registrado_por_nome ? ` · ${escapeHtml(c.registrado_por_nome)}` : ''}
+          </p>
+        </div>
+        ${usuarioLogado.perfil === 'DESENVOLVEDOR' ? `
+          <button class="btn btn-danger" type="button" data-action="excluir-commit" data-id="${c.id}">Remover</button>
+        ` : ''}
+      </div>
+    </article>
+  `).join('');
+}
+
+function abrirFormCommit() {
+  document.getElementById('commitFormPanel').classList.remove('hidden');
+  document.getElementById('commitForm').reset();
+  limparMensagem('commitFormMsg');
+}
+
+function fecharFormCommit() {
+  document.getElementById('commitFormPanel').classList.add('hidden');
+  document.getElementById('commitForm').reset();
+  limparMensagem('commitFormMsg');
+}
+
+async function registrarCommit(event) {
+  event.preventDefault();
+  limparMensagem('commitFormMsg');
+
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
+  const moduloId = document.getElementById('commitModuloSelect').value;
+  const dados = formParaObjeto(event.target);
+
+  try {
+    await apiFetch(`/api/modulos/${moduloId}/commits`, { method: 'POST', body: dados });
+    mostrarMensagem('commitFormMsg', 'Commit registrado com sucesso.');
+    await carregarCommits(Number(moduloId));
+    setTimeout(fecharFormCommit, 700);
+  } catch (err) {
+    mostrarMensagem('commitFormMsg', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+async function excluirCommit(id, moduloId, btn) {
+  const ok = await confirmar('Remover este commit?', {
+    titulo: 'Confirmar remoção',
+    confirmar: 'Remover',
+    perigo: true
+  });
+  if (!ok) return;
+
+  setBtnLoading(btn, true);
+  try {
+    await apiFetch(`/api/modulos/${moduloId}/commits/${id}`, { method: 'DELETE' });
+    await carregarCommits(moduloId);
+  } catch (err) {
+    await alertar(err.message, { titulo: 'Erro ao remover commit' });
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+// === Pré-Análise ===
+
+let relatorios = [];
+
+async function carregarRelatorios() {
+  try {
+    const response = await apiFetch(`/api/projetos/${projetoId}/pre-analise`);
+    relatorios = response.data;
+    renderizarRelatorios();
+  } catch (err) {
+    document.getElementById('relatorioLista').innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderizarRelatorios() {
+  const alvo = document.getElementById('relatorioLista');
+
+  if (!relatorios.length) {
+    alvo.innerHTML = '<div class="empty">Nenhum relatório de pré-análise cadastrado.</div>';
+    return;
+  }
+
+  alvo.innerHTML = relatorios.map((r) => `
+    <article class="list-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <h3>${escapeHtml(r.titulo)}</h3>
+          <p style="white-space:pre-wrap;">${escapeHtml(r.conteudo)}</p>
+          <p class="muted" style="font-size:0.82rem;">${escapeHtml(r.criado_por_nome || '-')} · ${formatarDataHora(r.criado_em)}</p>
+        </div>
+        ${usuarioLogado.perfil === 'DESENVOLVEDOR' ? `
+          <div class="actions" style="flex-shrink:0;">
+            <button class="btn btn-secondary btn-small" type="button" data-action="editar-relatorio" data-id="${r.id}">Editar</button>
+            <button class="btn btn-danger btn-small" type="button" data-action="excluir-relatorio" data-id="${r.id}">Excluir</button>
+          </div>
+        ` : ''}
+      </div>
+    </article>
+  `).join('');
+}
+
+function abrirFormRelatorio() {
+  document.getElementById('relatorioFormPanel').classList.remove('hidden');
+  document.getElementById('relatorioForm').reset();
+  document.getElementById('relatorioId').value = '';
+  limparMensagem('relatorioFormMsg');
+}
+
+function editarRelatorio(id) {
+  const r = relatorios.find((item) => item.id === id);
+  if (!r) return;
+  document.getElementById('relatorioFormPanel').classList.remove('hidden');
+  document.getElementById('relatorioId').value = r.id;
+  document.getElementById('relatorioTitulo').value = r.titulo;
+  document.getElementById('relatorioConteudo').value = r.conteudo;
+  limparMensagem('relatorioFormMsg');
+  document.getElementById('relatorioFormPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function fecharFormRelatorio() {
+  document.getElementById('relatorioFormPanel').classList.add('hidden');
+  document.getElementById('relatorioForm').reset();
+  limparMensagem('relatorioFormMsg');
+}
+
+async function salvarRelatorio(event) {
+  event.preventDefault();
+  limparMensagem('relatorioFormMsg');
+
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
+  const dados = formParaObjeto(event.target);
+  const id = dados.id;
+  delete dados.id;
+
+  try {
+    if (id) {
+      await apiFetch(`/api/pre-analise/${id}`, { method: 'PUT', body: dados });
+      mostrarMensagem('relatorioFormMsg', 'Relatório atualizado com sucesso.');
+    } else {
+      await apiFetch(`/api/projetos/${projetoId}/pre-analise`, { method: 'POST', body: dados });
+      mostrarMensagem('relatorioFormMsg', 'Relatório criado com sucesso.');
+    }
+    await carregarRelatorios();
+    setTimeout(fecharFormRelatorio, 700);
+  } catch (err) {
+    mostrarMensagem('relatorioFormMsg', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+async function excluirRelatorio(id, btn) {
+  const ok = await confirmar('Excluir este relatório de pré-análise?', {
+    titulo: 'Confirmar exclusão',
+    descricao: 'Esta ação não pode ser desfeita.',
+    confirmar: 'Excluir',
+    perigo: true
+  });
+  if (!ok) return;
+
+  setBtnLoading(btn, true);
+  try {
+    await apiFetch(`/api/pre-analise/${id}`, { method: 'DELETE' });
+    await carregarRelatorios();
+  } catch (err) {
+    await alertar(err.message, { titulo: 'Erro ao excluir relatório' });
+  } finally {
+    setBtnLoading(btn, false);
   }
 }

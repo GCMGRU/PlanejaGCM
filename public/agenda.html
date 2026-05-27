@@ -1,0 +1,176 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda | PlannoDev</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/api.js" defer></script>
+  <script src="/js/agenda.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><img src="/img/plannodev-icon.png" alt="PlannoDev"></div>
+        <div>
+          <h2>PlannoDev</h2>
+          <small>Gestão de Projetos</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <span data-user-name>Usuário</span>
+          <span data-user-profile>Perfil</span>
+        </div>
+        <button class="btn btn-secondary" data-logout>Sair</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <nav>
+          <a class="nav-link" href="/dashboard.html">Dashboard</a>
+          <a class="nav-link" href="/projetos.html">Projetos</a>
+          <a class="nav-link" href="/ideias.html">Ideias</a>
+          <a class="nav-link" href="/agenda.html">Agenda</a>
+          <a class="nav-link admin-only" href="/usuarios.html">Usuários</a>
+          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1>Agenda</h1>
+            <p>Reuniões agendadas com setores.</p>
+          </div>
+          <button id="novaReuniaoBtn" class="btn btn-primary" type="button">Nova reunião</button>
+        </div>
+
+        <form id="filtrosAgenda" class="toolbar">
+          <div class="field">
+            <label for="mesFiltro">Mês</label>
+            <input id="mesFiltro" name="mes" type="month">
+          </div>
+          <div class="field">
+            <label for="statusFiltro">Status</label>
+            <select id="statusFiltro" name="status">
+              <option value="">Todos</option>
+              <option value="AGENDADA">Agendada</option>
+              <option value="REAGENDADA">Reagendada</option>
+              <option value="CONCLUIDA">Concluída</option>
+              <option value="CANCELADA">Cancelada</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="projetoFiltroAgenda">Projeto</label>
+            <select id="projetoFiltroAgenda" name="projeto_id"></select>
+          </div>
+          <button class="btn btn-secondary" type="submit">Filtrar</button>
+        </form>
+
+        <section id="reuniaoFormPanel" class="card panel hidden" style="margin-top: 16px;">
+          <div class="panel-header">
+            <h2 id="reuniaoFormTitulo">Nova reunião</h2>
+            <button id="fecharReuniaoForm" class="btn btn-secondary" type="button">Fechar</button>
+          </div>
+          <form id="reuniaoForm" class="form-grid">
+            <input type="hidden" id="reuniaoId" name="id">
+            <div class="field span-2">
+              <label for="reuniaoTituloInput">Título *</label>
+              <input id="reuniaoTituloInput" name="titulo" required placeholder="Ex: Alinhamento com RH">
+            </div>
+            <div class="field">
+              <label for="reuniaoSetor">Setor *</label>
+              <input id="reuniaoSetor" name="setor" required placeholder="Ex: Recursos Humanos">
+            </div>
+            <div class="field">
+              <label for="reuniaoData">Data *</label>
+              <input id="reuniaoData" name="data_reuniao" type="date" required>
+            </div>
+            <div class="field">
+              <label for="reuniaoHorario">Horário *</label>
+              <input id="reuniaoHorario" name="horario" type="time" required>
+            </div>
+            <div class="field span-3">
+              <label for="reuniaoAssunto">Assunto *</label>
+              <textarea id="reuniaoAssunto" name="assunto" required style="min-height:80px;" placeholder="Descreva o assunto da reunião..."></textarea>
+            </div>
+            <div class="field span-3" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px;">
+              <p class="muted" style="margin:0;">Vinculações opcionais</p>
+            </div>
+            <div class="field">
+              <label for="reuniaoProjeto">Projeto</label>
+              <select id="reuniaoProjeto" name="projeto_id"></select>
+            </div>
+            <div class="field">
+              <label for="reuniaoModulo">Módulo</label>
+              <select id="reuniaoModulo" name="modulo_id">
+                <option value="">Sem módulo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="reuniaoIdeia">Ideia</label>
+              <select id="reuniaoIdeia" name="ideia_id"></select>
+            </div>
+            <div class="actions span-3">
+              <button id="salvarReuniaoBtn" class="btn btn-primary" type="submit">Salvar reunião</button>
+              <button id="cancelarReuniaoForm" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+          <div id="reuniaoFormMsg" class="message"></div>
+        </section>
+
+        <section id="relatoPanel" class="card panel hidden" style="margin-top: 16px;">
+          <div class="panel-header">
+            <h2>Concluir reunião</h2>
+            <button id="fecharRelatoPanel" class="btn btn-secondary" type="button">Fechar</button>
+          </div>
+          <form id="relatoForm" class="form-grid">
+            <input type="hidden" id="relatoReuniaoId">
+            <div class="field span-3">
+              <p id="relatoReuniaoDesc" class="muted" style="margin:0 0 8px;"></p>
+              <label for="relatoTexto">Relato da reunião *</label>
+              <textarea id="relatoTexto" name="relato" required style="min-height:120px;" placeholder="Descreva o que foi discutido e decidido na reunião..."></textarea>
+            </div>
+            <div class="actions span-3">
+              <button id="salvarRelatoBtn" class="btn btn-primary" type="submit">Confirmar conclusão</button>
+              <button id="cancelarRelatoForm" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+          <div id="relatoFormMsg" class="message"></div>
+        </section>
+
+        <div id="agendaMensagem" class="message" style="margin-top:16px;"></div>
+
+        <section class="card panel" style="margin-top: 16px;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Reunião</th>
+                  <th>Setor</th>
+                  <th>Status</th>
+                  <th>Vínculo</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="agendaTabela"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="reuniaoDetalhe" class="card panel hidden" style="margin-top: 16px;">
+          <div class="panel-header">
+            <h2 id="detalheTitulo">Detalhes da reunião</h2>
+            <button id="fecharDetalhe" class="btn btn-secondary" type="button">Fechar</button>
+          </div>
+          <div id="detalheConteudo" class="meta-list"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

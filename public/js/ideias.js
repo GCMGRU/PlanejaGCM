@@ -58,7 +58,7 @@ function configurarEventosIdeias() {
 
     if (botao.dataset.action === 'editar') abrirFormIdeia(ideia);
     if (botao.dataset.action === 'responder') abrirResposta(ideia);
-    if (botao.dataset.action === 'status') await alterarStatus(ideia);
+    if (botao.dataset.action === 'status') await alterarStatus(ideia, botao);
     if (botao.dataset.action === 'transformar') abrirTransformar(ideia);
   });
 
@@ -168,6 +168,9 @@ async function salvarIdeia(event) {
   event.preventDefault();
   limparMensagem('ideiaMensagem');
 
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
   const dados = formParaObjeto(event.target);
   const id = dados.id;
   delete dados.id;
@@ -185,6 +188,8 @@ async function salvarIdeia(event) {
     setTimeout(fecharFormIdeia, 700);
   } catch (err) {
     mostrarMensagem('ideiaMensagem', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
@@ -204,6 +209,9 @@ async function salvarResposta(event) {
   event.preventDefault();
   limparMensagem('respostaMensagem');
 
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
   const id = document.getElementById('respostaIdeiaId').value;
   const dados = formParaObjeto(event.target);
 
@@ -214,12 +222,14 @@ async function salvarResposta(event) {
     setTimeout(fecharResposta, 700);
   } catch (err) {
     mostrarMensagem('respostaMensagem', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
-async function alterarStatus(ideia) {
+async function alterarStatus(ideia, btn) {
   const select = document.querySelector(`[data-status-select="${ideia.id}"]`);
-
+  setBtnLoading(btn, true);
   try {
     await apiFetch(`/api/ideias/${ideia.id}/status`, {
       method: 'PUT',
@@ -227,7 +237,9 @@ async function alterarStatus(ideia) {
     });
     await carregarIdeias();
   } catch (err) {
-    alert(err.message);
+    await alertar(err.message, { titulo: 'Erro ao atualizar status' });
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
@@ -251,6 +263,9 @@ async function transformarIdeia(event) {
   event.preventDefault();
   limparMensagem('transformarMensagem');
 
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
   const id = document.getElementById('transformarIdeiaId').value;
   const dados = formParaObjeto(event.target);
 
@@ -264,5 +279,7 @@ async function transformarIdeia(event) {
     setTimeout(fecharTransformar, 700);
   } catch (err) {
     mostrarMensagem('transformarMensagem', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
   }
 }

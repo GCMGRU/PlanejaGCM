@@ -228,6 +228,54 @@ router.put('/modulos/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) 
   }
 });
 
+router.get('/modulos/:id/commits', async (req, res, next) => {
+  try {
+    const id = inteiroObrigatorio(req.params.id, 'Módulo');
+    const result = await dbQuery(
+      `SELECT c.*, u.nome AS registrado_por_nome
+       FROM commits_modulo c
+       LEFT JOIN usuarios u ON u.id = c.registrado_por
+       WHERE c.modulo_id = $1
+       ORDER BY c.data_commit DESC NULLS LAST, c.criado_em DESC`,
+      [id]
+    );
+    res.ok(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/modulos/:id/commits', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+  try {
+    const moduloId = inteiroObrigatorio(req.params.id, 'Módulo');
+    const mensagem = textoObrigatorio(req.body.mensagem, 'Mensagem');
+    const hash = req.body.hash ? String(req.body.hash).trim().slice(0, 40) || null : null;
+    const branch = req.body.branch ? String(req.body.branch).trim().slice(0, 100) || null : null;
+    const dataCommit = dataOpcional(req.body.data_commit, 'Data do commit');
+
+    const result = await dbQuery(
+      `INSERT INTO commits_modulo (modulo_id, mensagem, hash, branch, data_commit, registrado_por)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [moduloId, mensagem, hash || null, branch || null, dataCommit, req.user.id]
+    );
+
+    res.status(201).json({ success: true, message: 'Commit registrado com sucesso.', data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/modulos/:moduloId/commits/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+  try {
+    const id = inteiroObrigatorio(req.params.id, 'Commit');
+    await dbQuery('DELETE FROM commits_modulo WHERE id = $1', [id]);
+    res.ok(null, 'Commit removido com sucesso.');
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete('/modulos/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Módulo');
