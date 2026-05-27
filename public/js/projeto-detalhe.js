@@ -76,6 +76,18 @@ function configurarEventosDetalhe() {
     if (botao.dataset.action === 'editar-relatorio') editarRelatorio(id);
     if (botao.dataset.action === 'excluir-relatorio') await excluirRelatorio(id, botao);
   });
+
+  document.getElementById('novaFonteBtn')?.addEventListener('click', () => abrirFormFonte());
+  document.getElementById('cancelarFonteForm').addEventListener('click', fecharFormFonte);
+  document.getElementById('fonteForm').addEventListener('submit', salvarFonte);
+
+  document.getElementById('fonteLista').addEventListener('click', async (event) => {
+    const botao = event.target.closest('[data-action]');
+    if (!botao) return;
+    const id = Number(botao.dataset.id);
+    if (botao.dataset.action === 'editar-fonte') editarFonte(id);
+    if (botao.dataset.action === 'excluir-fonte') await excluirFonte(id, botao);
+  });
 }
 
 async function carregarTudo() {
@@ -93,6 +105,7 @@ async function carregarTudo() {
   renderizarIdeias(ideiasResponse.data);
   preencherSelectCommitModulo();
   await carregarRelatorios();
+  await carregarFontes();
 
   if (usuarioLogado.perfil === 'DESENVOLVEDOR') {
     const historicoResponse = await apiFetch(`/api/projetos/${projetoId}/historico`);
@@ -528,6 +541,153 @@ async function excluirRelatorio(id, btn) {
     await carregarRelatorios();
   } catch (err) {
     await alertar(err.message, { titulo: 'Erro ao excluir relatório' });
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+// === Fontes de Informação ===
+
+const FONTE_TIPO_LABELS = {
+  URL: 'URL / Site',
+  DOCUMENTO: 'Documento',
+  PLANILHA: 'Planilha',
+  SISTEMA: 'Sistema',
+  CONTATO: 'Contato',
+  OUTRO: 'Outro'
+};
+
+const FONTE_TIPO_BADGE = {
+  URL: 'badge-status',
+  DOCUMENTO: 'badge-neutral',
+  PLANILHA: 'badge-success',
+  SISTEMA: 'badge-warning',
+  CONTATO: 'badge-neutral',
+  OUTRO: 'badge-neutral'
+};
+
+let fontes = [];
+
+async function carregarFontes() {
+  try {
+    const response = await apiFetch(`/api/projetos/${projetoId}/fontes`);
+    fontes = response.data;
+    renderizarFontes();
+  } catch (err) {
+    document.getElementById('fonteLista').innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderizarFontes() {
+  const alvo = document.getElementById('fonteLista');
+
+  if (!fontes.length) {
+    alvo.innerHTML = '<div class="empty">Nenhuma fonte de informação cadastrada.</div>';
+    return;
+  }
+
+  alvo.innerHTML = fontes.map((f) => {
+    const tipoLabel = FONTE_TIPO_LABELS[f.tipo] || f.tipo;
+    const tipoBadge = FONTE_TIPO_BADGE[f.tipo] || 'badge-neutral';
+    const isUrl = f.tipo === 'URL' && f.link && (f.link.startsWith('http://') || f.link.startsWith('https://'));
+
+    const linkHtml = f.link
+      ? isUrl
+        ? `<a href="${escapeHtml(f.link)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-small" style="display:inline-flex;align-items:center;gap:4px;">Acessar ↗</a>`
+        : `<span class="muted" style="font-size:0.85rem;word-break:break-all;">${escapeHtml(f.link)}</span>`
+      : '';
+
+    const canEdit = usuarioLogado.perfil === 'DESENVOLVEDOR' || usuarioLogado.perfil === 'ADMIN';
+
+    return `
+      <article class="list-item">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="badge ${tipoBadge}">${escapeHtml(tipoLabel)}</span>
+              <h3 style="margin:0;">${escapeHtml(f.titulo)}</h3>
+            </div>
+            ${f.descricao ? `<p class="muted" style="margin:4px 0;">${escapeHtml(f.descricao)}</p>` : ''}
+            ${linkHtml ? `<div style="margin-top:6px;">${linkHtml}</div>` : ''}
+            <p class="muted" style="font-size:0.8rem;margin-top:6px;">${escapeHtml(f.criado_por_nome || '-')} · ${formatarDataHora(f.criado_em)}</p>
+          </div>
+          ${canEdit ? `
+            <div class="actions" style="flex-shrink:0;">
+              <button class="btn btn-secondary btn-small" type="button" data-action="editar-fonte" data-id="${f.id}">Editar</button>
+              <button class="btn btn-danger btn-small" type="button" data-action="excluir-fonte" data-id="${f.id}">Excluir</button>
+            </div>
+          ` : ''}
+        </div>
+      </article>`;
+  }).join('');
+}
+
+function abrirFormFonte(fonte = null) {
+  document.getElementById('fonteFormPanel').classList.remove('hidden');
+  document.getElementById('fonteForm').reset();
+  document.getElementById('fonteId').value = fonte?.id || '';
+  document.getElementById('fonteTitulo').value = fonte?.titulo || '';
+  document.getElementById('fonteTipo').value = fonte?.tipo || 'OUTRO';
+  document.getElementById('fonteDescricao').value = fonte?.descricao || '';
+  document.getElementById('fonteLink').value = fonte?.link || '';
+  limparMensagem('fonteFormMsg');
+  document.getElementById('fonteFormPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function editarFonte(id) {
+  const fonte = fontes.find((f) => f.id === id);
+  if (fonte) abrirFormFonte(fonte);
+}
+
+function fecharFormFonte() {
+  document.getElementById('fonteFormPanel').classList.add('hidden');
+  document.getElementById('fonteForm').reset();
+  limparMensagem('fonteFormMsg');
+}
+
+async function salvarFonte(event) {
+  event.preventDefault();
+  limparMensagem('fonteFormMsg');
+
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
+  const dados = formParaObjeto(event.target);
+  const id = dados.id;
+  delete dados.id;
+
+  try {
+    if (id) {
+      await apiFetch(`/api/fontes-projeto/${id}`, { method: 'PUT', body: dados });
+      mostrarMensagem('fonteFormMsg', 'Fonte atualizada com sucesso.');
+    } else {
+      await apiFetch(`/api/projetos/${projetoId}/fontes`, { method: 'POST', body: dados });
+      mostrarMensagem('fonteFormMsg', 'Fonte adicionada com sucesso.');
+    }
+    await carregarFontes();
+    setTimeout(fecharFormFonte, 700);
+  } catch (err) {
+    mostrarMensagem('fonteFormMsg', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+async function excluirFonte(id, btn) {
+  const ok = await confirmar('Remover esta fonte de informação?', {
+    titulo: 'Confirmar remoção',
+    descricao: 'Esta ação não pode ser desfeita.',
+    confirmar: 'Remover',
+    perigo: true
+  });
+  if (!ok) return;
+
+  setBtnLoading(btn, true);
+  try {
+    await apiFetch(`/api/fontes-projeto/${id}`, { method: 'DELETE' });
+    await carregarFontes();
+  } catch (err) {
+    await alertar(err.message, { titulo: 'Erro ao remover fonte' });
   } finally {
     setBtnLoading(btn, false);
   }

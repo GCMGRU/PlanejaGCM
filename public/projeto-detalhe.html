@@ -214,6 +214,50 @@
           <div id="relatorioLista" class="list"></div>
         </section>
 
+        <section class="card panel" style="margin-top: 16px;">
+          <div class="panel-header">
+            <h2>Fontes de Informação</h2>
+            <button id="novaFonteBtn" class="btn btn-primary dev-only" type="button">Nova fonte</button>
+          </div>
+          <p class="muted" style="margin:0 0 14px;font-size:0.88rem;">Registre onde obter informações específicas para este projeto — documentos, planilhas, sistemas, contatos.</p>
+
+          <div id="fonteFormPanel" class="hidden" style="margin-bottom: 16px;">
+            <form id="fonteForm" class="form-grid">
+              <input type="hidden" id="fonteId" name="id">
+              <div class="field span-2">
+                <label for="fonteTitulo">O que obter *</label>
+                <input id="fonteTitulo" name="titulo" required placeholder="Ex: Nomes dos GCMs da Unidade X">
+              </div>
+              <div class="field">
+                <label for="fonteTipo">Tipo</label>
+                <select id="fonteTipo" name="tipo" required>
+                  <option value="URL">URL / Site</option>
+                  <option value="DOCUMENTO">Documento</option>
+                  <option value="PLANILHA">Planilha</option>
+                  <option value="SISTEMA">Sistema</option>
+                  <option value="CONTATO">Contato</option>
+                  <option value="OUTRO" selected>Outro</option>
+                </select>
+              </div>
+              <div class="field span-3">
+                <label for="fonteDescricao">Descrição (opcional)</label>
+                <input id="fonteDescricao" name="descricao" placeholder="Ex: Planilha de efetivo atualizada mensalmente pelo setor de RH">
+              </div>
+              <div class="field span-3">
+                <label for="fonteLink">Link / Referência (opcional)</label>
+                <input id="fonteLink" name="link" placeholder="Ex: https://drive.google.com/... ou Pasta X no servidor Y">
+              </div>
+              <div class="actions span-3">
+                <button class="btn btn-primary" type="submit">Salvar fonte</button>
+                <button id="cancelarFonteForm" class="btn btn-secondary" type="button">Cancelar</button>
+              </div>
+            </form>
+            <div id="fonteFormMsg" class="message"></div>
+          </div>
+
+          <div id="fonteLista" class="list"></div>
+        </section>
+
         <section class="grid two-columns" style="margin-top: 16px;">
           <div class="card panel">
             <div class="panel-header"><h2>Ideias relacionadas</h2></div>
