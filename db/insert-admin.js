@@ -1,10 +1,19 @@
 require('dotenv').config();
 
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { pool, dbQuery } = require('./pool');
 
 async function main() {
-  const senhaHash = await bcrypt.hash('Admin@GCM76988', 10);
+  const senha = process.env.ADMIN_PASSWORD || (() => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
+    const gerada = Array.from(crypto.randomBytes(14)).map((b) => chars[b % chars.length]).join('');
+    console.log('⚠️  ADMIN_PASSWORD não definida. Senha gerada:');
+    console.log(`➜  ${gerada}  (anote agora, não será exibida novamente)`);
+    return gerada;
+  })();
+
+  const senhaHash = await bcrypt.hash(senha, 10);
 
   await dbQuery(
     `INSERT INTO usuarios (nome, usuario, senha_hash, perfil, ativo)

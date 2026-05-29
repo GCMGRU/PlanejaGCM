@@ -1,5 +1,15 @@
 ﻿require('dotenv').config();
 
+// Validações de inicialização — falha rápida antes de qualquer require
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET não está definido. Configure a variável de ambiente e reinicie.');
+  process.exit(1);
+}
+if (!process.env.DATABASE_URL) {
+  console.error('FATAL: DATABASE_URL não está definido. Configure a variável de ambiente e reinicie.');
+  process.exit(1);
+}
+
 const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -40,15 +50,23 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Rate limit geral da API
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: 'Muitas requisições em pouco tempo. Tente novamente em alguns minutos.'
-  }
+  message: { success: false, message: 'Muitas requisições em pouco tempo. Tente novamente em alguns minutos.' }
+}));
+
+// Rate limit restrito para login — máximo 10 tentativas por IP a cada 15 min
+app.use('/api/auth/login', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // não conta tentativas bem-sucedidas
+  message: { success: false, message: 'Muitas tentativas de login. Aguarde 15 minutos e tente novamente.' }
 }));
 
 app.use((req, res, next) => {

@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken');
 const { dbQuery } = require('../db/pool');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'segredo_temporario_desenvolvimento';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  console.error('FATAL: variável JWT_SECRET não definida. Configure-a antes de iniciar o servidor.');
+  process.exit(1);
+}
 
 async function requireAuth(req, res, next) {
   try {

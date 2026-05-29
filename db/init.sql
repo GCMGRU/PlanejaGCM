@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   senha_hash TEXT NOT NULL,
   perfil VARCHAR(30) NOT NULL CHECK (perfil IN ('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN')),
   ativo BOOLEAN DEFAULT TRUE,
+  deve_redefinir_senha BOOLEAN DEFAULT FALSE,
   criado_em TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );
@@ -179,20 +180,7 @@ CREATE TABLE IF NOT EXISTS reunioes (
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );
 
-DROP TRIGGER IF EXISTS trg_pre_analise_atualizado_em ON pre_analise;
-CREATE TRIGGER trg_pre_analise_atualizado_em
-BEFORE UPDATE ON pre_analise
-FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
-
-DROP TRIGGER IF EXISTS trg_reunioes_atualizado_em ON reunioes;
-CREATE TRIGGER trg_reunioes_atualizado_em
-BEFORE UPDATE ON reunioes
-FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
-
-CREATE INDEX IF NOT EXISTS idx_pre_analise_projeto_id ON pre_analise(projeto_id);
-CREATE INDEX IF NOT EXISTS idx_reunioes_data ON reunioes(data_reuniao DESC);
-CREATE INDEX IF NOT EXISTS idx_reunioes_status ON reunioes(status);
-
+-- Função usada por todos os triggers de atualizado_em
 CREATE OR REPLACE FUNCTION set_atualizado_em()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -201,30 +189,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Triggers
 DROP TRIGGER IF EXISTS trg_usuarios_atualizado_em ON usuarios;
 CREATE TRIGGER trg_usuarios_atualizado_em
-BEFORE UPDATE ON usuarios
-FOR EACH ROW
-EXECUTE FUNCTION set_atualizado_em();
+BEFORE UPDATE ON usuarios FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
 
 DROP TRIGGER IF EXISTS trg_projetos_atualizado_em ON projetos;
 CREATE TRIGGER trg_projetos_atualizado_em
-BEFORE UPDATE ON projetos
-FOR EACH ROW
-EXECUTE FUNCTION set_atualizado_em();
+BEFORE UPDATE ON projetos FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
 
 DROP TRIGGER IF EXISTS trg_modulos_atualizado_em ON modulos;
 CREATE TRIGGER trg_modulos_atualizado_em
-BEFORE UPDATE ON modulos
-FOR EACH ROW
-EXECUTE FUNCTION set_atualizado_em();
+BEFORE UPDATE ON modulos FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
 
 DROP TRIGGER IF EXISTS trg_ideias_atualizado_em ON ideias;
 CREATE TRIGGER trg_ideias_atualizado_em
-BEFORE UPDATE ON ideias
-FOR EACH ROW
-EXECUTE FUNCTION set_atualizado_em();
+BEFORE UPDATE ON ideias FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
 
+DROP TRIGGER IF EXISTS trg_pre_analise_atualizado_em ON pre_analise;
+CREATE TRIGGER trg_pre_analise_atualizado_em
+BEFORE UPDATE ON pre_analise FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
+
+DROP TRIGGER IF EXISTS trg_reunioes_atualizado_em ON reunioes;
+CREATE TRIGGER trg_reunioes_atualizado_em
+BEFORE UPDATE ON reunioes FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
+
+-- Índices
 CREATE INDEX IF NOT EXISTS idx_projetos_status ON projetos(status);
 CREATE INDEX IF NOT EXISTS idx_projetos_prioridade ON projetos(prioridade);
 CREATE INDEX IF NOT EXISTS idx_modulos_projeto_id ON modulos(projeto_id);
@@ -234,3 +224,6 @@ CREATE INDEX IF NOT EXISTS idx_ideias_status ON ideias(status);
 CREATE INDEX IF NOT EXISTS idx_ideias_criado_por ON ideias(criado_por);
 CREATE INDEX IF NOT EXISTS idx_historico_entidade ON historico_alteracoes(entidade, entidade_id);
 CREATE INDEX IF NOT EXISTS idx_historico_criado_em ON historico_alteracoes(criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_pre_analise_projeto_id ON pre_analise(projeto_id);
+CREATE INDEX IF NOT EXISTS idx_reunioes_data ON reunioes(data_reuniao DESC);
+CREATE INDEX IF NOT EXISTS idx_reunioes_status ON reunioes(status);
