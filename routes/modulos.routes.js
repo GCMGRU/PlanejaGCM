@@ -77,7 +77,7 @@ router.get('/modulos/:id', async (req, res, next) => {
   }
 });
 
-router.post('/projetos/:projetoId/modulos', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+router.post('/projetos/:projetoId/modulos', requireRole('DESENVOLVEDOR', 'SUPERVISOR'), async (req, res, next) => {
   try {
     const projetoId = inteiroObrigatorio(req.params.projetoId, 'Projeto');
     const nome = textoObrigatorio(req.body.nome, 'Nome');
@@ -133,7 +133,7 @@ router.post('/projetos/:projetoId/modulos', requireRole('DESENVOLVEDOR'), async 
   }
 });
 
-router.put('/modulos/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+router.put('/modulos/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Módulo');
     const antigo = await buscarModulo(id);

@@ -24,7 +24,7 @@ router.get('/projetos/:projetoId/fontes', async (req, res, next) => {
   }
 });
 
-router.post('/projetos/:projetoId/fontes', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.post('/projetos/:projetoId/fontes', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const projetoId = inteiroObrigatorio(req.params.projetoId, 'Projeto');
     const titulo    = textoObrigatorio(req.body.titulo, 'Título');
@@ -44,7 +44,7 @@ router.post('/projetos/:projetoId/fontes', requireRole('DESENVOLVEDOR', 'ADMIN')
   }
 });
 
-router.put('/fontes-projeto/:id', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.put('/fontes-projeto/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id        = inteiroObrigatorio(req.params.id, 'Fonte');
     const titulo    = textoObrigatorio(req.body.titulo, 'Título');
@@ -64,7 +64,7 @@ router.put('/fontes-projeto/:id', requireRole('DESENVOLVEDOR', 'ADMIN'), async (
   }
 });
 
-router.delete('/fontes-projeto/:id', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.delete('/fontes-projeto/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Fonte');
     const result = await dbQuery('DELETE FROM fontes_projeto WHERE id = $1 RETURNING id', [id]);

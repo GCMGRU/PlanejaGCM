@@ -22,7 +22,7 @@ router.get('/projetos/:projetoId/pre-analise', async (req, res, next) => {
   }
 });
 
-router.post('/projetos/:projetoId/pre-analise', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.post('/projetos/:projetoId/pre-analise', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const projetoId = inteiroObrigatorio(req.params.projetoId, 'Projeto');
     const titulo = textoObrigatorio(req.body.titulo, 'Título');
@@ -40,7 +40,7 @@ router.post('/projetos/:projetoId/pre-analise', requireRole('DESENVOLVEDOR', 'AD
   }
 });
 
-router.put('/pre-analise/:id', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.put('/pre-analise/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Relatório');
     const titulo = textoObrigatorio(req.body.titulo, 'Título');
@@ -59,7 +59,7 @@ router.put('/pre-analise/:id', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req
   }
 });
 
-router.delete('/pre-analise/:id', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.delete('/pre-analise/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Relatório');
     const result = await dbQuery('DELETE FROM pre_analise WHERE id = $1 RETURNING id', [id]);

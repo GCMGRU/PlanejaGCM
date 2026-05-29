@@ -16,7 +16,7 @@ function gerarSenhaAleatoria() {
 
 const router = express.Router();
 
-router.get('/', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
+router.get('/', requireRole('DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'), async (req, res, next) => {
   try {
     const result = await dbQuery(
       `SELECT id, nome, usuario, perfil, ativo, criado_em, atualizado_em
