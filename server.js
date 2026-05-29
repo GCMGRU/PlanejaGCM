@@ -1,5 +1,10 @@
 ﻿require('dotenv').config();
 
+console.log('[boot] processo iniciado, NODE_ENV=' + process.env.NODE_ENV);
+console.log('[boot] JWT_SECRET definido:', !!process.env.JWT_SECRET);
+console.log('[boot] DATABASE_URL definido:', !!process.env.DATABASE_URL);
+console.log('[boot] PORT:', process.env.PORT);
+
 // Validações de inicialização — falha rápida antes de qualquer require
 if (!process.env.JWT_SECRET) {
   console.error('FATAL: JWT_SECRET não está definido. Configure a variável de ambiente e reinicie.');
@@ -112,6 +117,16 @@ app.use((err, req, res, next) => {
     message: err.message || 'Erro interno no servidor.',
     error: isProduction ? undefined : err.code || err.stack
   });
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err.message, err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+  process.exit(1);
 });
 
 app.listen(PORT, () => {
