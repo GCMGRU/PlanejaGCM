@@ -869,6 +869,22 @@ button {
   to { transform: rotate(360deg); }
 }
 
+.dev-supervisor-only {
+  display: none;
+}
+
+body.perfil-desenvolvedor .dev-supervisor-only,
+body.perfil-supervisor .dev-supervisor-only {
+  display: revert;
+}
+
+body.perfil-desenvolvedor a.dev-supervisor-only,
+body.perfil-supervisor a.dev-supervisor-only,
+body.perfil-desenvolvedor button.dev-supervisor-only,
+body.perfil-supervisor button.dev-supervisor-only {
+  display: inline-flex;
+}
+
 .dev-only {
   display: none;
 }

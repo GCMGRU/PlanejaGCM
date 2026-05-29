@@ -27,7 +27,7 @@ router.get('/projetos/:projetoId/equipe', async (req, res, next) => {
 });
 
 // Adicionar um membro (usado no detalhe do projeto)
-router.post('/projetos/:projetoId/equipe', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+router.post('/projetos/:projetoId/equipe', requireRole('DESENVOLVEDOR', 'SUPERVISOR'), async (req, res, next) => {
   try {
     const projetoId = inteiroObrigatorio(req.params.projetoId, 'Projeto');
     const usuario_id = inteiroObrigatorio(req.body.usuario_id, 'Usuário');
@@ -47,7 +47,7 @@ router.post('/projetos/:projetoId/equipe', requireRole('DESENVOLVEDOR'), async (
 });
 
 // Substituir toda a equipe (usado ao salvar o formulário de projeto)
-router.put('/projetos/:projetoId/equipe', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+router.put('/projetos/:projetoId/equipe', requireRole('DESENVOLVEDOR', 'SUPERVISOR'), async (req, res, next) => {
   try {
     const projetoId = inteiroObrigatorio(req.params.projetoId, 'Projeto');
     const equipe = req.body.equipe;
@@ -72,7 +72,7 @@ router.put('/projetos/:projetoId/equipe', requireRole('DESENVOLVEDOR'), async (r
 });
 
 // Atualizar a função de um membro (edição inline no detalhe)
-router.put('/equipe/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+router.put('/equipe/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Membro');
     const funcao = textoObrigatorio(req.body.funcao, 'Função');
@@ -89,7 +89,7 @@ router.put('/equipe/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) =
 });
 
 // Remover um membro
-router.delete('/equipe/:id', requireRole('DESENVOLVEDOR'), async (req, res, next) => {
+router.delete('/equipe/:id', requireRole('DESENVOLVEDOR', 'SUPERVISOR'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Membro');
     const result = await dbQuery('DELETE FROM equipe_projeto WHERE id = $1 RETURNING id', [id]);

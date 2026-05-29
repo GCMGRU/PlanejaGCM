@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usuariosResponse = await apiFetch('/api/usuarios');
     usuariosProjeto = usuariosResponse.data;
 
-    if (usuarioLogado.perfil === 'DESENVOLVEDOR') {
+    if (usuarioLogado.perfil === 'DESENVOLVEDOR' || usuarioLogado.perfil === 'SUPERVISOR') {
       preencherSelectUsuarios(document.getElementById('moduloResponsavel'), usuariosProjeto);
     }
 
@@ -189,10 +189,10 @@ function renderizarModulos() {
       <td>${formatarData(modulo.data_fim_prevista)}</td>
       <td>
         <div class="actions">
-          ${usuarioLogado.perfil === 'DESENVOLVEDOR' ? `
+          ${['DESENVOLVEDOR', 'SUPERVISOR'].includes(usuarioLogado.perfil) ? `
             ${modulo.status !== 'CONCLUIDO' ? `<button class="btn btn-secondary" type="button" data-action="concluir" data-id="${modulo.id}">Concluir</button>` : ''}
             <button class="btn btn-secondary" type="button" data-action="editar" data-id="${modulo.id}">Editar</button>
-            <button class="btn btn-danger" type="button" data-action="excluir" data-id="${modulo.id}">Excluir</button>
+            ${usuarioLogado.perfil === 'DESENVOLVEDOR' ? `<button class="btn btn-danger" type="button" data-action="excluir" data-id="${modulo.id}">Excluir</button>` : ''}
           ` : '<span class="muted">Visualização</span>'}
         </div>
       </td>
@@ -478,7 +478,7 @@ function preencherSelectEquipe() {
 
 function renderizarEquipe() {
   const alvo = document.getElementById('equipeLista');
-  const isDev = usuarioLogado.perfil === 'DESENVOLVEDOR';
+  const isDev = ['DESENVOLVEDOR', 'SUPERVISOR'].includes(usuarioLogado.perfil);
 
   if (!equipe.length) {
     alvo.innerHTML = '<div class="empty">Nenhum membro na equipe. Adicione membros clicando em "Adicionar membro".</div>';
@@ -631,7 +631,7 @@ function renderizarRelatorios() {
           <p style="white-space:pre-wrap;">${escapeHtml(r.conteudo)}</p>
           <p class="muted" style="font-size:0.82rem;">${escapeHtml(r.criado_por_nome || '-')} · ${formatarDataHora(r.criado_em)}</p>
         </div>
-        ${usuarioLogado.perfil === 'DESENVOLVEDOR' ? `
+        ${['DESENVOLVEDOR', 'SUPERVISOR'].includes(usuarioLogado.perfil) ? `
           <div class="actions" style="flex-shrink:0;">
             <button class="btn btn-secondary btn-small" type="button" data-action="editar-relatorio" data-id="${r.id}">Editar</button>
             <button class="btn btn-danger btn-small" type="button" data-action="excluir-relatorio" data-id="${r.id}">Excluir</button>
@@ -765,7 +765,7 @@ function renderizarFontes() {
         : `<span class="muted" style="font-size:0.85rem;word-break:break-all;">${escapeHtml(f.link)}</span>`
       : '';
 
-    const canEdit = usuarioLogado.perfil === 'DESENVOLVEDOR' || usuarioLogado.perfil === 'ADMIN';
+    const canEdit = ['DESENVOLVEDOR', 'SUPERVISOR', 'ADMIN'].includes(usuarioLogado.perfil);
 
     return `
       <article class="list-item">

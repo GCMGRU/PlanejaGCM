@@ -5,8 +5,6 @@ const { inteiroObrigatorio } = require('./helpers');
 
 const router = express.Router();
 
-router.use(requireRole('DESENVOLVEDOR', 'ADMIN'));
-
 async function listarHistorico({ entidade = null, entidadeId = null, limit = 100 }) {
   const filtros = [];
   const params = [];
@@ -39,7 +37,7 @@ async function listarHistorico({ entidade = null, entidadeId = null, limit = 100
   );
 }
 
-router.get('/historico', async (req, res, next) => {
+router.get('/historico', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
   try {
     const result = await listarHistorico({
       entidade: req.query.entidade || null,
@@ -53,7 +51,7 @@ router.get('/historico', async (req, res, next) => {
   }
 });
 
-router.get('/projetos/:id/historico', async (req, res, next) => {
+router.get('/projetos/:id/historico', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Projeto');
     const result = await listarHistorico({ entidade: 'PROJETO', entidadeId: id });
@@ -64,7 +62,7 @@ router.get('/projetos/:id/historico', async (req, res, next) => {
   }
 });
 
-router.get('/modulos/:id/historico', async (req, res, next) => {
+router.get('/modulos/:id/historico', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Módulo');
     const result = await listarHistorico({ entidade: 'MODULO', entidadeId: id });
@@ -75,7 +73,7 @@ router.get('/modulos/:id/historico', async (req, res, next) => {
   }
 });
 
-router.get('/ideias/:id/historico', async (req, res, next) => {
+router.get('/ideias/:id/historico', requireRole('DESENVOLVEDOR', 'ADMIN'), async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Ideia');
     const result = await listarHistorico({ entidade: 'IDEIA', entidadeId: id });
