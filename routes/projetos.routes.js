@@ -62,6 +62,17 @@ router.get('/', async (req, res, next) => {
       filtros.push(`p.nome ILIKE $${params.length}`);
     }
 
+    // Restrição de acesso: apenas membros da equipe, responsável ou (DESENVOLVEDOR em projetos sem equipe)
+    params.push(req.user.id);
+    const userIdx = params.length;
+    params.push(req.user.perfil);
+    const perfilIdx = params.length;
+    filtros.push(`(
+      p.responsavel_id = $${userIdx}
+      OR EXISTS (SELECT 1 FROM equipe_projeto ep WHERE ep.projeto_id = p.id AND ep.usuario_id = $${userIdx})
+      OR ($${perfilIdx} = 'DESENVOLVEDOR' AND NOT EXISTS (SELECT 1 FROM equipe_projeto ep2 WHERE ep2.projeto_id = p.id))
+    )`);
+
     const where = filtros.length ? `WHERE ${filtros.join(' AND ')}` : '';
 
     const result = await dbQuery(
@@ -91,9 +102,23 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+async function verificarAcessoProjeto(id, user) {
+  const acesso = await dbQuery(
+    `SELECT 1 FROM projetos p
+     WHERE p.id = $1 AND (
+       p.responsavel_id = $2
+       OR EXISTS (SELECT 1 FROM equipe_projeto ep WHERE ep.projeto_id = p.id AND ep.usuario_id = $2)
+       OR ($3 = 'DESENVOLVEDOR' AND NOT EXISTS (SELECT 1 FROM equipe_projeto ep2 WHERE ep2.projeto_id = p.id))
+     )`,
+    [id, user.id, user.perfil]
+  );
+  if (!acesso.rows.length) throw erro(403, 'Você não tem acesso a este projeto.');
+}
+
 router.get('/:id/resumo', async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Projeto');
+    await verificarAcessoProjeto(id, req.user);
     const projeto = await buscarProjetoDetalhado(id);
 
     if (!projeto) {
@@ -109,6 +134,7 @@ router.get('/:id/resumo', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const id = inteiroObrigatorio(req.params.id, 'Projeto');
+    await verificarAcessoProjeto(id, req.user);
     const projeto = await buscarProjetoDetalhado(id);
 
     if (!projeto) {

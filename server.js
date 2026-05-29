@@ -16,6 +16,7 @@ const historicoRoutes = require('./routes/historico.routes');
 const preAnaliseRoutes = require('./routes/pre-analise.routes');
 const reunioesRoutes = require('./routes/reunioes.routes');
 const fontesProjetoRoutes = require('./routes/fontes-projeto.routes');
+const equipeProjetoRoutes = require('./routes/equipe-projeto.routes');
 const { requireAuth } = require('./middleware/auth');
 
 const app = express();
@@ -71,6 +72,7 @@ app.use('/api', requireAuth, historicoRoutes);
 app.use('/api', requireAuth, preAnaliseRoutes);
 app.use('/api/reunioes', requireAuth, reunioesRoutes);
 app.use('/api', requireAuth, fontesProjetoRoutes);
+app.use('/api', requireAuth, equipeProjetoRoutes);
 
 app.use('/api', (req, res) => {
   res.status(404).json({

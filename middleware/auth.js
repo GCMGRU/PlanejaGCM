@@ -16,7 +16,7 @@ async function requireAuth(req, res, next) {
 
     const payload = jwt.verify(token, JWT_SECRET);
     const result = await dbQuery(
-      `SELECT id, nome, usuario, perfil, ativo, criado_em, atualizado_em
+      `SELECT id, nome, usuario, perfil, ativo, deve_redefinir_senha, criado_em, atualizado_em
        FROM usuarios
        WHERE id = $1 AND ativo = TRUE`,
       [payload.id]

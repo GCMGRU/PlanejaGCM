@@ -2,6 +2,7 @@ let projetoAtual = null;
 let modulos = [];
 let usuariosProjeto = [];
 let projetoId = null;
+let equipe = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -14,9 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    const usuariosResponse = await apiFetch('/api/usuarios');
+    usuariosProjeto = usuariosResponse.data;
+
     if (usuarioLogado.perfil === 'DESENVOLVEDOR') {
-      const usuariosResponse = await apiFetch('/api/usuarios');
-      usuariosProjeto = usuariosResponse.data;
       preencherSelectUsuarios(document.getElementById('moduloResponsavel'), usuariosProjeto);
     }
 
@@ -27,6 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       'afterbegin',
       `<div class="message show error">${escapeHtml(err.message)}</div>`
     );
+  } finally {
+    finalizarCarregamento();
   }
 });
 
@@ -63,6 +67,19 @@ function configurarEventosDetalhe() {
     const id = Number(botao.dataset.id);
     const moduloId = Number(document.getElementById('commitModuloSelect').value);
     await excluirCommit(id, moduloId, botao);
+  });
+
+  document.getElementById('novoMembroBtn')?.addEventListener('click', () => abrirFormEquipe());
+  document.getElementById('cancelarEquipeForm').addEventListener('click', fecharFormEquipe);
+  document.getElementById('equipeMembroForm').addEventListener('submit', adicionarMembro);
+  document.getElementById('equipeLista').addEventListener('click', async (event) => {
+    const botao = event.target.closest('[data-action]');
+    if (!botao) return;
+    const id = Number(botao.dataset.id);
+    if (botao.dataset.action === 'editar-funcao') iniciarEdicaoFuncao(id);
+    if (botao.dataset.action === 'salvar-funcao') await salvarFuncao(id, botao);
+    if (botao.dataset.action === 'cancelar-edit-funcao') cancelarEdicaoFuncao(id);
+    if (botao.dataset.action === 'remover-membro') await removerMembro(id, botao);
   });
 
   document.getElementById('novoRelatorioBtn')?.addEventListener('click', () => abrirFormRelatorio());
@@ -104,6 +121,7 @@ async function carregarTudo() {
   renderizarModulos();
   renderizarIdeias(ideiasResponse.data);
   preencherSelectCommitModulo();
+  await carregarEquipe();
   await carregarRelatorios();
   await carregarFontes();
 
@@ -428,6 +446,156 @@ async function excluirCommit(id, moduloId, btn) {
     await carregarCommits(moduloId);
   } catch (err) {
     await alertar(err.message, { titulo: 'Erro ao remover commit' });
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+// === Equipe do Projeto ===
+
+async function carregarEquipe() {
+  try {
+    const response = await apiFetch(`/api/projetos/${projetoId}/equipe`);
+    equipe = response.data;
+    renderizarEquipe();
+    preencherSelectEquipe();
+  } catch (err) {
+    document.getElementById('equipeLista').innerHTML = `<div class="empty">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function preencherSelectEquipe() {
+  const select = document.getElementById('equipeNovoUsuario');
+  if (!select) return;
+  const idsNaEquipe = new Set(equipe.map((m) => m.usuario_id));
+  select.innerHTML =
+    '<option value="">Selecionar membro...</option>' +
+    usuariosProjeto
+      .filter((u) => !idsNaEquipe.has(u.id))
+      .map((u) => `<option value="${u.id}">${escapeHtml(u.nome)} (${escapeHtml(formatarPerfil(u.perfil))})</option>`)
+      .join('');
+}
+
+function renderizarEquipe() {
+  const alvo = document.getElementById('equipeLista');
+  const isDev = usuarioLogado.perfil === 'DESENVOLVEDOR';
+
+  if (!equipe.length) {
+    alvo.innerHTML = '<div class="empty">Nenhum membro na equipe. Adicione membros clicando em "Adicionar membro".</div>';
+    return;
+  }
+
+  alvo.innerHTML = equipe.map((m) => `
+    <article class="list-item" id="equipe-row-${m.id}">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <strong>${escapeHtml(m.usuario_nome)}</strong>
+          <span id="equipe-funcao-text-${m.id}" class="muted"> · ${escapeHtml(m.funcao)}</span>
+          <span id="equipe-funcao-edit-${m.id}" class="hidden" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <input id="equipe-funcao-input-${m.id}" value="${escapeHtml(m.funcao)}" maxlength="120" style="width:200px;">
+            <button type="button" class="btn btn-primary btn-small" data-action="salvar-funcao" data-id="${m.id}">Salvar</button>
+            <button type="button" class="btn btn-secondary btn-small" data-action="cancelar-edit-funcao" data-id="${m.id}">Cancelar</button>
+          </span>
+        </div>
+        ${isDev ? `
+          <div class="actions" style="flex-shrink:0;" id="equipe-acoes-${m.id}">
+            <button type="button" class="btn btn-secondary btn-small" data-action="editar-funcao" data-id="${m.id}">Editar função</button>
+            <button type="button" class="btn btn-danger btn-small" data-action="remover-membro" data-id="${m.id}">Remover</button>
+          </div>
+        ` : ''}
+      </div>
+    </article>
+  `).join('');
+}
+
+function abrirFormEquipe() {
+  document.getElementById('equipeFormPanel').classList.remove('hidden');
+  document.getElementById('equipeMembroForm').reset();
+  limparMensagem('equipeFormMsg');
+  preencherSelectEquipe();
+}
+
+function fecharFormEquipe() {
+  document.getElementById('equipeFormPanel').classList.add('hidden');
+  document.getElementById('equipeMembroForm').reset();
+  limparMensagem('equipeFormMsg');
+}
+
+async function adicionarMembro(event) {
+  event.preventDefault();
+  limparMensagem('equipeFormMsg');
+
+  const btn = event.submitter ?? event.target.querySelector('[type="submit"]');
+  setBtnLoading(btn, true);
+
+  const dados = formParaObjeto(event.target);
+  try {
+    await apiFetch(`/api/projetos/${projetoId}/equipe`, { method: 'POST', body: dados });
+    mostrarMensagem('equipeFormMsg', 'Membro adicionado com sucesso.');
+    await carregarEquipe();
+    setTimeout(fecharFormEquipe, 700);
+  } catch (err) {
+    mostrarMensagem('equipeFormMsg', err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+function iniciarEdicaoFuncao(id) {
+  document.getElementById(`equipe-funcao-text-${id}`)?.classList.add('hidden');
+  const editEl = document.getElementById(`equipe-funcao-edit-${id}`);
+  if (editEl) {
+    editEl.classList.remove('hidden');
+    editEl.style.display = 'inline-flex';
+  }
+  document.getElementById(`equipe-acoes-${id}`)?.classList.add('hidden');
+  document.getElementById(`equipe-funcao-input-${id}`)?.focus();
+}
+
+function cancelarEdicaoFuncao(id) {
+  document.getElementById(`equipe-funcao-text-${id}`)?.classList.remove('hidden');
+  const editEl = document.getElementById(`equipe-funcao-edit-${id}`);
+  if (editEl) {
+    editEl.classList.add('hidden');
+    editEl.style.display = '';
+  }
+  document.getElementById(`equipe-acoes-${id}`)?.classList.remove('hidden');
+}
+
+async function salvarFuncao(id, btn) {
+  const funcao = document.getElementById(`equipe-funcao-input-${id}`)?.value?.trim();
+  if (!funcao) {
+    await alertar('A função não pode ficar em branco.', { titulo: 'Atenção' });
+    return;
+  }
+
+  setBtnLoading(btn, true);
+  try {
+    await apiFetch(`/api/equipe/${id}`, { method: 'PUT', body: { funcao } });
+    await carregarEquipe();
+  } catch (err) {
+    await alertar(err.message, { titulo: 'Erro ao salvar função' });
+    cancelarEdicaoFuncao(id);
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+async function removerMembro(id, btn) {
+  const membro = equipe.find((m) => m.id === id);
+  const ok = await confirmar(`Remover ${membro ? escapeHtml(membro.usuario_nome) : 'este membro'} da equipe?`, {
+    titulo: 'Confirmar remoção',
+    confirmar: 'Remover',
+    perigo: true
+  });
+  if (!ok) return;
+
+  setBtnLoading(btn, true);
+  try {
+    await apiFetch(`/api/equipe/${id}`, { method: 'DELETE' });
+    await carregarEquipe();
+  } catch (err) {
+    await alertar(err.message, { titulo: 'Erro ao remover membro' });
   } finally {
     setBtnLoading(btn, false);
   }

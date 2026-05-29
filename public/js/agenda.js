@@ -3,10 +3,19 @@ let projetosLista = [];
 let modoEdicao = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await iniciarPagina('/agenda.html');
-  await carregarAuxiliares();
-  await carregarReunioes();
-  configurarEventos();
+  try {
+    await iniciarPagina('/agenda.html');
+    await carregarAuxiliares();
+    await carregarReunioes();
+    configurarEventos();
+  } catch (err) {
+    document.querySelector('.content')?.insertAdjacentHTML(
+      'afterbegin',
+      `<div class="message show error">${escapeHtml(err.message)}</div>`
+    );
+  } finally {
+    finalizarCarregamento();
+  }
 });
 
 async function carregarAuxiliares() {

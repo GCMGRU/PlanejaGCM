@@ -5,7 +5,7 @@ const { inteiroObrigatorio } = require('./helpers');
 
 const router = express.Router();
 
-router.use(requireRole('DESENVOLVEDOR'));
+router.use(requireRole('DESENVOLVEDOR', 'ADMIN'));
 
 async function listarHistorico({ entidade = null, entidadeId = null, limit = 100 }) {
   const filtros = [];

@@ -1,275 +1,474 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detalhe do projeto | PlannoDev</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <script src="/js/api.js" defer></script>
-  <script src="/js/projeto-detalhe.js" defer></script>
-</head>
-<body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark"><img src="/img/plannodev-icon.png" alt="PlannoDev"></div>
-        <div>
-          <h2>PlannoDev</h2>
-          <small>Gestão de Projetos</small>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <div class="user-chip">
-          <span data-user-name>Usuário</span>
-          <span data-user-profile>Perfil</span>
-        </div>
-        <button class="btn btn-secondary" data-logout>Sair</button>
-      </div>
-    </header>
-
-    <div class="layout">
-      <aside class="sidebar">
-        <nav>
-          <a class="nav-link" href="/dashboard.html">Dashboard</a>
-          <a class="nav-link" href="/projetos.html">Projetos</a>
-          <a class="nav-link" href="/ideias.html">Ideias</a>
-          <a class="nav-link" href="/agenda.html">Agenda</a>
-          <a class="nav-link admin-only" href="/usuarios.html">Usuários</a>
-          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
-        </nav>
-      </aside>
-
-      <main class="content">
-        <div class="page-header">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detalhe do projeto | PlannoDev</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="shortcut icon"
+      href="img/plannodev-icon.png"
+      type="image/x-icon"
+    />
+    <script src="/js/api.js" defer></script>
+    <script src="/js/projeto-detalhe.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">
+            <img src="/img/plannodev-icon.png" alt="PlannoDev" />
+          </div>
           <div>
-            <h1 id="projetoTitulo">Projeto</h1>
-            <p id="projetoDescricao" class="muted"></p>
+            <h2>PlannoDev</h2>
+            <small>Gestão de Projetos</small>
           </div>
-          <a class="btn btn-secondary" href="/projetos.html">Voltar</a>
         </div>
+        <div class="topbar-actions">
+          <div class="user-chip">
+            <span data-user-name>Usuário</span>
+            <span data-user-profile>Perfil</span>
+          </div>
+          <button class="btn btn-secondary" data-logout>Sair</button>
+        </div>
+      </header>
 
-        <section class="detail-grid">
-          <div class="card panel">
-            <div class="panel-header"><h2>Dados principais</h2></div>
-            <div id="projetoDados" class="meta-list"></div>
-            <div style="margin-top: 16px;">
-              <div class="panel-header"><h3>Progresso</h3><strong id="progressoTexto">0%</strong></div>
-              <div class="progress"><div id="progressoBarra" class="progress-bar"></div></div>
+      <div class="layout">
+        <aside class="sidebar">
+          <nav>
+            <a class="nav-link" href="/dashboard.html">Dashboard</a>
+            <a class="nav-link no-admin" href="/projetos.html">Projetos</a>
+            <a class="nav-link no-admin" href="/ideias.html">Ideias</a>
+            <a class="nav-link no-admin" href="/agenda.html">Agenda</a>
+            <a class="nav-link admin-only" href="/usuarios.html">Usuários</a>
+            <a class="nav-link dev-only admin-only" href="/historico.html">Histórico</a>
+          </nav>
+        </aside>
+
+        <main class="content">
+          <div class="page-header">
+            <div>
+              <h1 id="projetoTitulo">Projeto</h1>
+              <p id="projetoDescricao" class="muted"></p>
             </div>
+            <a class="btn btn-secondary" href="/projetos.html">Voltar</a>
           </div>
 
-          <div class="card panel">
+          <section class="detail-grid">
+            <div class="card panel">
+              <div class="panel-header"><h2>Dados principais</h2></div>
+              <div id="projetoDados" class="meta-list"></div>
+              <div style="margin-top: 16px">
+                <div class="panel-header">
+                  <h3>Progresso</h3>
+                  <strong id="progressoTexto">0%</strong>
+                </div>
+                <div class="progress">
+                  <div id="progressoBarra" class="progress-bar"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card panel">
+              <div class="panel-header">
+                <h2>Módulos</h2>
+                <button
+                  id="novoModuloBtn"
+                  class="btn btn-primary dev-only"
+                  type="button"
+                >
+                  Novo módulo
+                </button>
+              </div>
+              <div id="resumoModulos" class="list"></div>
+            </div>
+          </section>
+
+          <section class="card panel" style="margin-top: 16px">
             <div class="panel-header">
-              <h2>Módulos</h2>
-              <button id="novoModuloBtn" class="btn btn-primary dev-only" type="button">Novo módulo</button>
+              <h2>Equipe do projeto</h2>
+              <button
+                id="novoMembroBtn"
+                class="btn btn-primary dev-only"
+                type="button"
+              >
+                Adicionar membro
+              </button>
             </div>
-            <div id="resumoModulos" class="list"></div>
-          </div>
-        </section>
+            <div
+              id="equipeFormPanel"
+              class="hidden"
+              style="margin-bottom: 16px"
+            >
+              <form
+                id="equipeMembroForm"
+                style="
+                  display: flex;
+                  gap: 8px;
+                  flex-wrap: wrap;
+                  align-items: flex-end;
+                "
+              >
+                <div class="field" style="flex: 1; min-width: 140px; margin: 0">
+                  <label for="equipeNovoUsuario">Membro</label>
+                  <select
+                    id="equipeNovoUsuario"
+                    name="usuario_id"
+                    required
+                  ></select>
+                </div>
+                <div class="field" style="flex: 2; min-width: 180px; margin: 0">
+                  <label for="equipeNovaFuncao">Função</label>
+                  <input
+                    id="equipeNovaFuncao"
+                    name="funcao"
+                    required
+                    placeholder="Ex: Analista, Dev front-end"
+                    maxlength="120"
+                  />
+                </div>
+                <div class="actions" style="margin: 0; padding-bottom: 2px">
+                  <button class="btn btn-primary" type="submit">
+                    Adicionar
+                  </button>
+                  <button
+                    id="cancelarEquipeForm"
+                    class="btn btn-secondary"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+              <div id="equipeFormMsg" class="message"></div>
+            </div>
+            <div id="equipeLista" class="list"></div>
+          </section>
 
-        <section id="moduloFormPanel" class="card panel hidden" style="margin-top: 16px;">
-          <div class="panel-header">
-            <h2 id="moduloFormTitulo">Novo módulo</h2>
-            <button id="fecharModuloForm" class="btn btn-secondary" type="button">Fechar</button>
-          </div>
+          <section
+            id="moduloFormPanel"
+            class="card panel hidden"
+            style="margin-top: 16px"
+          >
+            <div class="panel-header">
+              <h2 id="moduloFormTitulo">Novo módulo</h2>
+              <button
+                id="fecharModuloForm"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Fechar
+              </button>
+            </div>
 
-          <form id="moduloForm" class="form-grid">
-            <input type="hidden" id="moduloId" name="id">
-            <div class="field span-2">
-              <label for="moduloNome">Nome</label>
-              <input id="moduloNome" name="nome" required>
-            </div>
-            <div class="field">
-              <label for="moduloResponsavel">Responsável</label>
-              <select id="moduloResponsavel" name="responsavel_id"></select>
-            </div>
-            <div class="field">
-              <label for="moduloStatus">Status</label>
-              <select id="moduloStatus" name="status" required>
-                <option value="NAO_INICIADO">Não iniciado</option>
-                <option value="EM_DESENVOLVIMENTO">Em desenvolvimento</option>
-                <option value="AGUARDANDO_VALIDACAO">Aguardando validação</option>
-                <option value="EM_AJUSTE">Em ajuste</option>
-                <option value="CONCLUIDO">Concluído</option>
-                <option value="PAUSADO">Pausado</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="moduloPrioridade">Prioridade</label>
-              <select id="moduloPrioridade" name="prioridade" required>
-                <option value="BAIXA">Baixa</option>
-                <option value="MEDIA" selected>Média</option>
-                <option value="ALTA">Alta</option>
-                <option value="URGENTE">Urgente</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="moduloDataInicio">Data de início</label>
-              <input id="moduloDataInicio" name="data_inicio" type="date">
-            </div>
-            <div class="field">
-              <label for="moduloDataFim">Data fim prevista</label>
-              <input id="moduloDataFim" name="data_fim_prevista" type="date">
-            </div>
-            <div class="field">
-              <label for="moduloDataConclusao">Data de conclusão</label>
-              <input id="moduloDataConclusao" name="data_conclusao" type="date">
-            </div>
-            <div class="field span-3">
-              <label for="moduloDescricao">Descrição</label>
-              <textarea id="moduloDescricao" name="descricao"></textarea>
-            </div>
-            <div class="field span-3">
-              <label for="moduloObservacoes">Observações</label>
-              <textarea id="moduloObservacoes" name="observacoes"></textarea>
-            </div>
-            <div class="actions span-3">
-              <button class="btn btn-primary" type="submit">Salvar módulo</button>
-              <button id="cancelarModuloForm" class="btn btn-secondary" type="button">Cancelar</button>
-            </div>
-          </form>
-          <div id="moduloMensagem" class="message"></div>
-        </section>
-
-        <section class="card panel" style="margin-top: 16px;">
-          <div class="panel-header"><h2>Lista de módulos</h2></div>
-          <div class="table-wrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Módulo</th>
-                  <th>Status</th>
-                  <th>Prioridade</th>
-                  <th>Responsável</th>
-                  <th>Prazo</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="modulosTabela"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="card panel" style="margin-top: 16px;">
-          <div class="panel-header">
-            <h2>Commits do módulo</h2>
-            <button id="novoCommitBtn" class="btn btn-primary dev-only hidden" type="button">Registrar commit</button>
-          </div>
-          <div class="field" style="margin-bottom: 12px;">
-            <label for="commitModuloSelect">Módulo</label>
-            <select id="commitModuloSelect"></select>
-          </div>
-          <div id="commitFormPanel" class="hidden" style="margin-bottom: 16px;">
-            <form id="commitForm" class="form-grid">
+            <form id="moduloForm" class="form-grid">
+              <input type="hidden" id="moduloId" name="id" />
               <div class="field span-2">
-                <label for="commitMensagem">Mensagem *</label>
-                <input id="commitMensagem" name="mensagem" required placeholder="Ex: Implementado cadastro de usuários">
+                <label for="moduloNome">Nome</label>
+                <input id="moduloNome" name="nome" required />
               </div>
               <div class="field">
-                <label for="commitHash">Hash (opcional)</label>
-                <input id="commitHash" name="hash" placeholder="Ex: e76a03e" maxlength="40">
+                <label for="moduloResponsavel">Responsável</label>
+                <select id="moduloResponsavel" name="responsavel_id"></select>
               </div>
               <div class="field">
-                <label for="commitBranch">Branch (opcional)</label>
-                <input id="commitBranch" name="branch" placeholder="Ex: main" maxlength="100">
-              </div>
-              <div class="field">
-                <label for="commitData">Data</label>
-                <input id="commitData" name="data_commit" type="date">
-              </div>
-              <div class="actions span-3">
-                <button class="btn btn-primary" type="submit">Salvar commit</button>
-                <button id="cancelarCommitForm" class="btn btn-secondary" type="button">Cancelar</button>
-              </div>
-            </form>
-            <div id="commitFormMsg" class="message"></div>
-          </div>
-          <div id="commitLista" class="list"></div>
-        </section>
-
-        <section class="card panel" style="margin-top: 16px;">
-          <div class="panel-header">
-            <h2>Pré-Análise</h2>
-            <button id="novoRelatorioBtn" class="btn btn-primary dev-only" type="button">Novo relatório</button>
-          </div>
-          <div id="relatorioFormPanel" class="hidden" style="margin-bottom: 16px;">
-            <form id="relatorioForm" class="form-grid">
-              <input type="hidden" id="relatorioId" name="id">
-              <div class="field span-3">
-                <label for="relatorioTitulo">Título *</label>
-                <input id="relatorioTitulo" name="titulo" required placeholder="Ex: Levantamento de requisitos">
-              </div>
-              <div class="field span-3">
-                <label for="relatorioConteudo">Conteúdo *</label>
-                <textarea id="relatorioConteudo" name="conteudo" required style="min-height:140px;" placeholder="Descreva os resultados da análise, observações, decisões tomadas..."></textarea>
-              </div>
-              <div class="actions span-3">
-                <button class="btn btn-primary" type="submit">Salvar relatório</button>
-                <button id="cancelarRelatorioForm" class="btn btn-secondary" type="button">Cancelar</button>
-              </div>
-            </form>
-            <div id="relatorioFormMsg" class="message"></div>
-          </div>
-          <div id="relatorioLista" class="list"></div>
-        </section>
-
-        <section class="card panel" style="margin-top: 16px;">
-          <div class="panel-header">
-            <h2>Fontes de Informação</h2>
-            <button id="novaFonteBtn" class="btn btn-primary dev-only" type="button">Nova fonte</button>
-          </div>
-          <p class="muted" style="margin:0 0 14px;font-size:0.88rem;">Registre onde obter informações específicas para este projeto — documentos, planilhas, sistemas, contatos.</p>
-
-          <div id="fonteFormPanel" class="hidden" style="margin-bottom: 16px;">
-            <form id="fonteForm" class="form-grid">
-              <input type="hidden" id="fonteId" name="id">
-              <div class="field span-2">
-                <label for="fonteTitulo">O que obter *</label>
-                <input id="fonteTitulo" name="titulo" required placeholder="Ex: Nomes dos GCMs da Unidade X">
-              </div>
-              <div class="field">
-                <label for="fonteTipo">Tipo</label>
-                <select id="fonteTipo" name="tipo" required>
-                  <option value="URL">URL / Site</option>
-                  <option value="DOCUMENTO">Documento</option>
-                  <option value="PLANILHA">Planilha</option>
-                  <option value="SISTEMA">Sistema</option>
-                  <option value="CONTATO">Contato</option>
-                  <option value="OUTRO" selected>Outro</option>
+                <label for="moduloStatus">Status</label>
+                <select id="moduloStatus" name="status" required>
+                  <option value="NAO_INICIADO">Não iniciado</option>
+                  <option value="EM_DESENVOLVIMENTO">Em desenvolvimento</option>
+                  <option value="AGUARDANDO_VALIDACAO">
+                    Aguardando validação
+                  </option>
+                  <option value="EM_AJUSTE">Em ajuste</option>
+                  <option value="CONCLUIDO">Concluído</option>
+                  <option value="PAUSADO">Pausado</option>
+                  <option value="CANCELADO">Cancelado</option>
                 </select>
               </div>
-              <div class="field span-3">
-                <label for="fonteDescricao">Descrição (opcional)</label>
-                <input id="fonteDescricao" name="descricao" placeholder="Ex: Planilha de efetivo atualizada mensalmente pelo setor de RH">
+              <div class="field">
+                <label for="moduloPrioridade">Prioridade</label>
+                <select id="moduloPrioridade" name="prioridade" required>
+                  <option value="BAIXA">Baixa</option>
+                  <option value="MEDIA" selected>Média</option>
+                  <option value="ALTA">Alta</option>
+                  <option value="URGENTE">Urgente</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="moduloDataInicio">Data de início</label>
+                <input id="moduloDataInicio" name="data_inicio" type="date" />
+              </div>
+              <div class="field">
+                <label for="moduloDataFim">Data fim prevista</label>
+                <input
+                  id="moduloDataFim"
+                  name="data_fim_prevista"
+                  type="date"
+                />
+              </div>
+              <div class="field">
+                <label for="moduloDataConclusao">Data de conclusão</label>
+                <input
+                  id="moduloDataConclusao"
+                  name="data_conclusao"
+                  type="date"
+                />
               </div>
               <div class="field span-3">
-                <label for="fonteLink">Link / Referência (opcional)</label>
-                <input id="fonteLink" name="link" placeholder="Ex: https://drive.google.com/... ou Pasta X no servidor Y">
+                <label for="moduloDescricao">Descrição</label>
+                <textarea id="moduloDescricao" name="descricao"></textarea>
+              </div>
+              <div class="field span-3">
+                <label for="moduloObservacoes">Observações</label>
+                <textarea id="moduloObservacoes" name="observacoes"></textarea>
               </div>
               <div class="actions span-3">
-                <button class="btn btn-primary" type="submit">Salvar fonte</button>
-                <button id="cancelarFonteForm" class="btn btn-secondary" type="button">Cancelar</button>
+                <button class="btn btn-primary" type="submit">
+                  Salvar módulo
+                </button>
+                <button
+                  id="cancelarModuloForm"
+                  class="btn btn-secondary"
+                  type="button"
+                >
+                  Cancelar
+                </button>
               </div>
             </form>
-            <div id="fonteFormMsg" class="message"></div>
-          </div>
+            <div id="moduloMensagem" class="message"></div>
+          </section>
 
-          <div id="fonteLista" class="list"></div>
-        </section>
+          <section class="card panel" style="margin-top: 16px">
+            <div class="panel-header">
+              <h2>Pré-Análise</h2>
+              <button
+                id="novoRelatorioBtn"
+                class="btn btn-primary dev-only"
+                type="button"
+              >
+                Novo relatório
+              </button>
+            </div>
+            <div
+              id="relatorioFormPanel"
+              class="hidden"
+              style="margin-bottom: 16px"
+            >
+              <form id="relatorioForm" class="form-grid">
+                <input type="hidden" id="relatorioId" name="id" />
+                <div class="field span-3">
+                  <label for="relatorioTitulo">Título *</label>
+                  <input
+                    id="relatorioTitulo"
+                    name="titulo"
+                    required
+                    placeholder="Ex: Levantamento de requisitos"
+                  />
+                </div>
+                <div class="field span-3">
+                  <label for="relatorioConteudo">Conteúdo *</label>
+                  <textarea
+                    id="relatorioConteudo"
+                    name="conteudo"
+                    required
+                    style="min-height: 140px"
+                    placeholder="Descreva os resultados da análise, observações, decisões tomadas..."
+                  ></textarea>
+                </div>
+                <div class="actions span-3">
+                  <button class="btn btn-primary" type="submit">
+                    Salvar relatório
+                  </button>
+                  <button
+                    id="cancelarRelatorioForm"
+                    class="btn btn-secondary"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+              <div id="relatorioFormMsg" class="message"></div>
+            </div>
+            <div id="relatorioLista" class="list"></div>
+          </section>
 
-        <section class="grid two-columns" style="margin-top: 16px;">
-          <div class="card panel">
-            <div class="panel-header"><h2>Ideias relacionadas</h2></div>
-            <div id="ideiasRelacionadas" class="list"></div>
-          </div>
-          <div class="card panel dev-only">
-            <div class="panel-header"><h2>Histórico do projeto</h2></div>
-            <div id="historicoProjeto" class="list"></div>
-          </div>
-        </section>
-      </main>
+          <section class="card panel" style="margin-top: 16px">
+            <div class="panel-header"><h2>Lista de módulos</h2></div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Módulo</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th>Responsável</th>
+                    <th>Prazo</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="modulosTabela"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card panel" style="margin-top: 16px">
+            <div class="panel-header">
+              <h2>Commits do módulo</h2>
+              <button
+                id="novoCommitBtn"
+                class="btn btn-primary dev-only hidden"
+                type="button"
+              >
+                Registrar commit
+              </button>
+            </div>
+            <div class="field" style="margin-bottom: 12px">
+              <label for="commitModuloSelect">Módulo</label>
+              <select id="commitModuloSelect"></select>
+            </div>
+            <div
+              id="commitFormPanel"
+              class="hidden"
+              style="margin-bottom: 16px"
+            >
+              <form id="commitForm" class="form-grid">
+                <div class="field span-2">
+                  <label for="commitMensagem">Mensagem *</label>
+                  <input
+                    id="commitMensagem"
+                    name="mensagem"
+                    required
+                    placeholder="Ex: Implementado cadastro de usuários"
+                  />
+                </div>
+                <div class="field">
+                  <label for="commitHash">Hash (opcional)</label>
+                  <input
+                    id="commitHash"
+                    name="hash"
+                    placeholder="Ex: e76a03e"
+                    maxlength="40"
+                  />
+                </div>
+                <div class="field">
+                  <label for="commitBranch">Branch (opcional)</label>
+                  <input
+                    id="commitBranch"
+                    name="branch"
+                    placeholder="Ex: main"
+                    maxlength="100"
+                  />
+                </div>
+                <div class="field">
+                  <label for="commitData">Data</label>
+                  <input id="commitData" name="data_commit" type="date" />
+                </div>
+                <div class="actions span-3">
+                  <button class="btn btn-primary" type="submit">
+                    Salvar commit
+                  </button>
+                  <button
+                    id="cancelarCommitForm"
+                    class="btn btn-secondary"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+              <div id="commitFormMsg" class="message"></div>
+            </div>
+            <div id="commitLista" class="list"></div>
+          </section>
+
+          <section class="card panel" style="margin-top: 16px">
+            <div class="panel-header">
+              <h2>Fontes de Informação</h2>
+              <button
+                id="novaFonteBtn"
+                class="btn btn-primary dev-only"
+                type="button"
+              >
+                Nova fonte
+              </button>
+            </div>
+            <p class="muted" style="margin: 0 0 14px; font-size: 0.88rem">
+              Registre onde obter informações específicas para este projeto —
+              documentos, planilhas, sistemas, contatos.
+            </p>
+
+            <div id="fonteFormPanel" class="hidden" style="margin-bottom: 16px">
+              <form id="fonteForm" class="form-grid">
+                <input type="hidden" id="fonteId" name="id" />
+                <div class="field span-2">
+                  <label for="fonteTitulo">O que obter *</label>
+                  <input
+                    id="fonteTitulo"
+                    name="titulo"
+                    required
+                    placeholder="Ex: Nomes dos GCMs da Unidade X"
+                  />
+                </div>
+                <div class="field">
+                  <label for="fonteTipo">Tipo</label>
+                  <select id="fonteTipo" name="tipo" required>
+                    <option value="URL">URL / Site</option>
+                    <option value="DOCUMENTO">Documento</option>
+                    <option value="PLANILHA">Planilha</option>
+                    <option value="SISTEMA">Sistema</option>
+                    <option value="CONTATO">Contato</option>
+                    <option value="OUTRO" selected>Outro</option>
+                  </select>
+                </div>
+                <div class="field span-3">
+                  <label for="fonteDescricao">Descrição (opcional)</label>
+                  <input
+                    id="fonteDescricao"
+                    name="descricao"
+                    placeholder="Ex: Planilha de efetivo atualizada mensalmente pelo setor de RH"
+                  />
+                </div>
+                <div class="field span-3">
+                  <label for="fonteLink">Link / Referência (opcional)</label>
+                  <input
+                    id="fonteLink"
+                    name="link"
+                    placeholder="Ex: https://drive.google.com/... ou Pasta X no servidor Y"
+                  />
+                </div>
+                <div class="actions span-3">
+                  <button class="btn btn-primary" type="submit">
+                    Salvar fonte
+                  </button>
+                  <button
+                    id="cancelarFonteForm"
+                    class="btn btn-secondary"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+              <div id="fonteFormMsg" class="message"></div>
+            </div>
+
+            <div id="fonteLista" class="list"></div>
+          </section>
+
+          <section class="grid two-columns" style="margin-top: 16px">
+            <div class="card panel">
+              <div class="panel-header"><h2>Ideias relacionadas</h2></div>
+              <div id="ideiasRelacionadas" class="list"></div>
+            </div>
+            <div class="card panel dev-only">
+              <div class="panel-header"><h2>Histórico do projeto</h2></div>
+              <div id="historicoProjeto" class="list"></div>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

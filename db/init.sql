@@ -138,6 +138,30 @@ CREATE TABLE IF NOT EXISTS pre_analise (
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS fontes_projeto (
+  id SERIAL PRIMARY KEY,
+  projeto_id INTEGER NOT NULL REFERENCES projetos(id) ON DELETE CASCADE,
+  titulo VARCHAR(200) NOT NULL,
+  descricao TEXT,
+  link TEXT,
+  tipo VARCHAR(30) NOT NULL DEFAULT 'OUTRO' CHECK (tipo IN ('URL', 'DOCUMENTO', 'PLANILHA', 'SISTEMA', 'CONTATO', 'OUTRO')),
+  criado_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  criado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_fontes_projeto_projeto_id ON fontes_projeto(projeto_id);
+
+CREATE TABLE IF NOT EXISTS equipe_projeto (
+  id SERIAL PRIMARY KEY,
+  projeto_id INTEGER NOT NULL REFERENCES projetos(id) ON DELETE CASCADE,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  funcao VARCHAR(120) NOT NULL,
+  criado_em TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(projeto_id, usuario_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_equipe_projeto_projeto_id ON equipe_projeto(projeto_id);
+
 CREATE TABLE IF NOT EXISTS reunioes (
   id SERIAL PRIMARY KEY,
   titulo VARCHAR(200) NOT NULL,

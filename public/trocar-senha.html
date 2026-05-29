@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Criar nova senha | PlannoDev</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/api.js" defer></script>
+    <script src="/js/trocar-senha.js" defer></script>
+  </head>
+  <body class="login-page" style="min-height: 100vh;">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="/img/plannodev-icon.png" alt="PlannoDev" class="login-logo" />
+        <h2 style="color: var(--ink); margin: 0 0 4px;">PlannoDev</h2>
+        <p>Criar nova senha</p>
+      </div>
+
+      <div style="background: var(--amber-soft); border: 1px solid var(--amber); border-radius: 8px; padding: 12px 14px; margin-bottom: 22px; color: var(--amber); font-size: 0.9rem; line-height: 1.45;">
+        Por segurança, você precisa criar uma nova senha antes de acessar o sistema.
+      </div>
+
+      <form id="trocaSenhaForm">
+        <div class="field" style="margin-bottom: 14px;">
+          <label for="novaSenha">Nova senha</label>
+          <input
+            id="novaSenha"
+            name="nova_senha"
+            type="password"
+            required
+            placeholder="Mínimo 6 caracteres"
+            autocomplete="new-password"
+          />
+        </div>
+        <div class="field" style="margin-bottom: 22px;">
+          <label for="confirmarSenha">Confirmar nova senha</label>
+          <input
+            id="confirmarSenha"
+            name="confirmar_senha"
+            type="password"
+            required
+            placeholder="Repita a nova senha"
+            autocomplete="new-password"
+          />
+        </div>
+        <button class="btn btn-primary" type="submit" style="width: 100%;">
+          Salvar nova senha
+        </button>
+      </form>
+
+      <div id="trocaSenhaMensagem" class="message" style="margin-top: 12px;"></div>
+    </div>
+  </body>
+</html>

@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarUsuarios();
   } catch (err) {
     mostrarMensagem('usuariosMensagem', err.message, 'error');
+  } finally {
+    finalizarCarregamento();
   }
 });
 

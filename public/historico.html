@@ -1,90 +1,102 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Histórico | PlannoDev</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <script src="/js/api.js" defer></script>
-  <script src="/js/historico.js" defer></script>
-</head>
-<body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark"><img src="/img/plannodev-icon.png" alt="PlannoDev"></div>
-        <div>
-          <h2>PlannoDev</h2>
-          <small>Gestão de Projetos</small>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <div class="user-chip">
-          <span data-user-name>Usuário</span>
-          <span data-user-profile>Perfil</span>
-        </div>
-        <button class="btn btn-secondary" data-logout>Sair</button>
-      </div>
-    </header>
-
-    <div class="layout">
-      <aside class="sidebar">
-        <nav>
-          <a class="nav-link" href="/dashboard.html">Dashboard</a>
-          <a class="nav-link" href="/projetos.html">Projetos</a>
-          <a class="nav-link" href="/ideias.html">Ideias</a>
-          <a class="nav-link" href="/agenda.html">Agenda</a>
-          <a class="nav-link admin-only" href="/usuarios.html">Usuários</a>
-          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
-        </nav>
-      </aside>
-
-      <main class="content">
-        <div class="page-header">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Histórico | PlannoDev</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="shortcut icon"
+      href="img/plannodev-icon.png"
+      type="image/x-icon"
+    />
+    <script src="/js/api.js" defer></script>
+    <script src="/js/historico.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">
+            <img src="/img/plannodev-icon.png" alt="PlannoDev" />
+          </div>
           <div>
-            <h1>Histórico</h1>
-            <p>Registro automático das alterações importantes do sistema.</p>
+            <h2>PlannoDev</h2>
+            <small>Gestão de Projetos</small>
           </div>
         </div>
-
-        <form id="filtrosHistorico" class="toolbar">
-          <div class="field">
-            <label for="entidade">Entidade</label>
-            <select id="entidade" name="entidade">
-              <option value="">Todas</option>
-              <option value="PROJETO">Projeto</option>
-              <option value="MODULO">Módulo</option>
-              <option value="IDEIA">Ideia</option>
-            </select>
+        <div class="topbar-actions">
+          <div class="user-chip">
+            <span data-user-name>Usuário</span>
+            <span data-user-profile>Perfil</span>
           </div>
-          <div class="field">
-            <label for="entidade_id">ID da entidade</label>
-            <input id="entidade_id" name="entidade_id" type="number" min="1">
-          </div>
-          <button class="btn btn-secondary" type="submit">Filtrar</button>
-        </form>
+          <button class="btn btn-secondary" data-logout>Sair</button>
+        </div>
+      </header>
 
-        <div id="historicoMensagem" class="message"></div>
+      <div class="layout">
+        <aside class="sidebar">
+          <nav>
+            <a class="nav-link" href="/dashboard.html">Dashboard</a>
+            <a class="nav-link no-admin" href="/projetos.html">Projetos</a>
+            <a class="nav-link no-admin" href="/ideias.html">Ideias</a>
+            <a class="nav-link no-admin" href="/agenda.html">Agenda</a>
+            <a class="nav-link admin-only" href="/usuarios.html">Usuários</a>
+            <a class="nav-link dev-only admin-only" href="/historico.html">Histórico</a>
+          </nav>
+        </aside>
 
-        <section class="card panel">
-          <div class="table-wrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Usuário</th>
-                  <th>Entidade</th>
-                  <th>Ação</th>
-                  <th>Campo</th>
-                  <th>Descrição</th>
-                </tr>
-              </thead>
-              <tbody id="historicoTabela"></tbody>
-            </table>
+        <main class="content">
+          <div class="page-header">
+            <div>
+              <h1>Histórico</h1>
+              <p>Registro automático das alterações importantes do sistema.</p>
+            </div>
           </div>
-        </section>
-      </main>
+
+          <form id="filtrosHistorico" class="toolbar">
+            <div class="field">
+              <label for="entidade">Entidade</label>
+              <select id="entidade" name="entidade">
+                <option value="">Todas</option>
+                <option value="PROJETO">Projeto</option>
+                <option value="MODULO">Módulo</option>
+                <option value="IDEIA">Ideia</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="entidade_id">ID da entidade</label>
+              <input
+                id="entidade_id"
+                name="entidade_id"
+                type="number"
+                min="1"
+              />
+            </div>
+            <button class="btn btn-secondary" type="submit">Filtrar</button>
+          </form>
+
+          <div id="historicoMensagem" class="message"></div>
+
+          <section class="card panel">
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Usuário</th>
+                    <th>Entidade</th>
+                    <th>Ação</th>
+                    <th>Campo</th>
+                    <th>Descrição</th>
+                  </tr>
+                </thead>
+                <tbody id="historicoTabela"></tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

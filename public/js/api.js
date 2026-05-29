@@ -62,10 +62,27 @@ async function apiFetch(url, options = {}) {
 }
 
 async function carregarUsuario() {
+  // Aplica o perfil cacheado imediatamente para evitar flash nos elementos dev-only/admin-only
+  const perfilCache = localStorage.getItem('user_perfil');
+  if (perfilCache) {
+    document.body.classList.add(`perfil-${perfilCache.toLowerCase()}`);
+  }
+
   const response = await apiFetch('/api/auth/me');
   usuarioLogado = response.data;
 
+  // Corrige caso o cache esteja desatualizado
+  if (perfilCache && perfilCache !== usuarioLogado.perfil) {
+    document.body.classList.remove(`perfil-${perfilCache.toLowerCase()}`);
+  }
+  localStorage.setItem('user_perfil', usuarioLogado.perfil);
   document.body.classList.add(`perfil-${usuarioLogado.perfil.toLowerCase()}`);
+
+  // Força troca de senha se necessário
+  if (usuarioLogado.deve_redefinir_senha && !location.pathname.endsWith('/trocar-senha.html')) {
+    location.href = '/trocar-senha.html';
+    await new Promise(() => {}); // pausa execução enquanto o browser navega
+  }
 
   document.querySelectorAll('[data-user-name]').forEach((el) => {
     el.textContent = usuarioLogado.nome;
@@ -88,13 +105,75 @@ function configurarLogout() {
       try {
         await apiFetch('/api/auth/logout', { method: 'POST' });
       } finally {
+        localStorage.removeItem('user_perfil');
         location.href = '/login.html';
       }
     });
   });
 }
 
+function configurarMenuMobile() {
+  const topbar = document.querySelector('.topbar');
+  const sidebar = document.querySelector('.sidebar');
+  if (!topbar || !sidebar) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'menuHamburger';
+  btn.className = 'hamburger-btn';
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Abrir menu');
+  btn.innerHTML = '<span></span><span></span><span></span>';
+  topbar.insertBefore(btn, topbar.firstChild);
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'sidebarBackdrop';
+  backdrop.className = 'sidebar-backdrop';
+  document.body.appendChild(backdrop);
+
+  function fecharMenu() {
+    sidebar.classList.remove('sidebar-aberta');
+    backdrop.classList.remove('sidebar-backdrop-visivel');
+    btn.classList.remove('hamburger-ativo');
+    btn.setAttribute('aria-label', 'Abrir menu');
+    document.body.style.overflow = '';
+  }
+
+  function toggleMenu() {
+    const aberta = sidebar.classList.toggle('sidebar-aberta');
+    backdrop.classList.toggle('sidebar-backdrop-visivel', aberta);
+    btn.classList.toggle('hamburger-ativo', aberta);
+    btn.setAttribute('aria-label', aberta ? 'Fechar menu' : 'Abrir menu');
+    document.body.style.overflow = aberta ? 'hidden' : '';
+  }
+
+  btn.addEventListener('click', toggleMenu);
+  backdrop.addEventListener('click', fecharMenu);
+  sidebar.querySelectorAll('.nav-link').forEach((link) => {
+    link.addEventListener('click', () => { if (window.innerWidth <= 980) fecharMenu(); });
+  });
+  window.addEventListener('resize', () => { if (window.innerWidth > 980) fecharMenu(); });
+}
+
+function mostrarCarregamento() {
+  const content = document.querySelector('.content');
+  if (!content || document.getElementById('page-carregando')) return;
+  const div = document.createElement('div');
+  div.id = 'page-carregando';
+  div.className = 'page-carregando';
+  div.innerHTML = '<div class="spinner" role="status" aria-label="Carregando..."></div>';
+  content.appendChild(div);
+}
+
+function finalizarCarregamento() {
+  const el = document.getElementById('page-carregando');
+  if (!el) return;
+  el.classList.add('saindo');
+  setTimeout(() => el.remove(), 220);
+}
+
 async function iniciarPagina(linkAtivo) {
+  configurarMenuMobile();
+  mostrarCarregamento();
   await carregarUsuario();
   configurarLogout();
 

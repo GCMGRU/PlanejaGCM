@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -31,11 +31,11 @@
       <aside class="sidebar">
         <nav>
           <a class="nav-link" href="/dashboard.html">Dashboard</a>
-          <a class="nav-link" href="/projetos.html">Projetos</a>
-          <a class="nav-link" href="/ideias.html">Ideias</a>
-          <a class="nav-link" href="/agenda.html">Agenda</a>
+          <a class="nav-link no-admin" href="/projetos.html">Projetos</a>
+          <a class="nav-link no-admin" href="/ideias.html">Ideias</a>
+          <a class="nav-link no-admin" href="/agenda.html">Agenda</a>
           <a class="nav-link admin-only" href="/usuarios.html">Usuários</a>
-          <a class="nav-link dev-only" href="/historico.html">Histórico</a>
+          <a class="nav-link dev-only admin-only" href="/historico.html">Histórico</a>
         </nav>
       </aside>
 
@@ -43,11 +43,48 @@
         <div class="page-header">
           <div>
             <h1>Usuários</h1>
-            <p>Listagem básica dos usuários cadastrados no banco.</p>
+            <p>Gerencie os usuários com acesso ao sistema.</p>
           </div>
+          <button id="novoUsuarioBtn" class="btn btn-primary" type="button">Novo usuário</button>
         </div>
 
         <div id="usuariosMensagem" class="message"></div>
+
+        <section id="usuarioFormPanel" class="card panel hidden" style="margin-bottom: 16px;">
+          <div class="panel-header">
+            <h2>Novo usuário</h2>
+            <button id="fecharUsuarioForm" class="btn btn-secondary" type="button">Fechar</button>
+          </div>
+          <form id="usuarioForm" class="form-grid">
+            <div class="field span-2">
+              <label for="usuarioNome">Nome completo</label>
+              <input id="usuarioNome" name="nome" required placeholder="Ex: João da Silva">
+            </div>
+            <div class="field">
+              <label for="usuarioLogin">Nome de usuário</label>
+              <input id="usuarioLogin" name="usuario" required placeholder="Ex: joao.silva">
+            </div>
+            <div class="field">
+              <label for="usuarioPerfil">Perfil</label>
+              <select id="usuarioPerfil" name="perfil" required>
+                <option value="SUPERVISOR">Supervisor</option>
+                <option value="DESENVOLVEDOR">Desenvolvedor</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+            <div class="field">
+              <label style="visibility:hidden;">Ação</label>
+              <p class="muted" style="margin:0;font-size:0.85rem;line-height:1.4;">
+                Uma senha temporária será gerada automaticamente.
+              </p>
+            </div>
+            <div class="actions span-3">
+              <button class="btn btn-primary" type="submit">Criar usuário</button>
+              <button id="cancelarUsuarioForm" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+          <div id="usuarioFormMsg" class="message"></div>
+        </section>
 
         <section class="card panel">
           <div class="table-wrap">
@@ -59,6 +96,7 @@
                   <th>Perfil</th>
                   <th>Ativo</th>
                   <th>Criado em</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody id="usuariosTabela"></tbody>

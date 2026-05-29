@@ -43,8 +43,8 @@ router.post('/', requireRole('ADMIN'), async (req, res, next) => {
     let result;
     try {
       result = await dbQuery(
-        `INSERT INTO usuarios (nome, usuario, senha_hash, perfil)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO usuarios (nome, usuario, senha_hash, perfil, deve_redefinir_senha)
+         VALUES ($1, $2, $3, $4, TRUE)
          RETURNING id, nome, usuario, perfil, ativo, criado_em`,
         [nome, usuario, senhaHash, perfil]
       );
@@ -114,7 +114,7 @@ router.post('/:id/redefinir-senha', requireRole('ADMIN'), async (req, res, next)
     const senhaHash = await bcrypt.hash(senhaTemporaria, SALT_ROUNDS);
 
     const result = await dbQuery(
-      `UPDATE usuarios SET senha_hash = $1 WHERE id = $2 RETURNING id, nome`,
+      `UPDATE usuarios SET senha_hash = $1, deve_redefinir_senha = TRUE WHERE id = $2 RETURNING id, nome`,
       [senhaHash, id]
     );
 

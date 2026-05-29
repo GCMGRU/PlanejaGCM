@@ -1,33 +1,44 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login | PlannoDev</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <script src="/js/auth.js" defer></script>
-</head>
-<body class="login-page">
-  <main class="login-card">
-    <div class="login-brand">
-      <img src="/img/plannodev-logo.png" alt="PlannoDev" class="login-logo">
-      <p>Gestão de Projetos</p>
-    </div>
-
-    <form id="loginForm" class="grid">
-      <div class="field">
-        <label for="usuario">Usuário</label>
-        <input id="usuario" name="usuario" autocomplete="username" required>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login | PlannoDev</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="shortcut icon"
+      href="img/plannodev-icon.png"
+      type="image/x-icon"
+    />
+    <script src="/js/auth.js" defer></script>
+  </head>
+  <body class="login-page">
+    <main class="login-card">
+      <div class="login-brand">
+        <img src="/img/plannodev-logo.png" alt="PlannoDev" class="login-logo" />
+        <p>Gestão de Projetos</p>
       </div>
 
-      <div class="field">
-        <label for="senha">Senha</label>
-        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
-      </div>
+      <form id="loginForm" class="grid">
+        <div class="field">
+          <label for="usuario">Usuário</label>
+          <input id="usuario" name="usuario" autocomplete="username" required />
+        </div>
 
-      <button class="btn btn-primary" type="submit">Entrar</button>
-      <div id="loginMensagem" class="message" role="alert"></div>
-    </form>
-  </main>
-</body>
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button class="btn btn-primary" type="submit">Entrar</button>
+        <div id="loginMensagem" class="message" role="alert"></div>
+      </form>
+    </main>
+  </body>
 </html>

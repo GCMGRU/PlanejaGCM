@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { dbQuery } = require('../db/pool');
 const { requireAuth, JWT_SECRET } = require('../middleware/auth');
-const { textoObrigatorio } = require('./helpers');
+const { textoObrigatorio, erro } = require('./helpers');
 
 const router = express.Router();
 
@@ -61,6 +61,26 @@ router.post('/login', async (req, res, next) => {
 
 router.get('/me', requireAuth, (req, res) => {
   res.ok(req.user);
+});
+
+router.post('/trocar-senha', requireAuth, async (req, res, next) => {
+  try {
+    const novaSenha = textoObrigatorio(req.body.nova_senha, 'Nova senha');
+    const confirmar = textoObrigatorio(req.body.confirmar_senha, 'Confirmação de senha');
+
+    if (novaSenha !== confirmar) throw erro(400, 'As senhas não coincidem.');
+    if (novaSenha.length < 6) throw erro(400, 'A nova senha deve ter pelo menos 6 caracteres.');
+
+    const hash = await bcrypt.hash(novaSenha, 10);
+    await dbQuery(
+      `UPDATE usuarios SET senha_hash = $1, deve_redefinir_senha = FALSE WHERE id = $2`,
+      [hash, req.user.id]
+    );
+
+    res.ok(null, 'Senha alterada com sucesso.');
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post('/logout', (req, res) => {

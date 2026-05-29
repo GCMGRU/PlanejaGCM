@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarIdeias();
   } catch (err) {
     mostrarMensagem('ideiaMensagem', err.message, 'error');
+  } finally {
+    finalizarCarregamento();
   }
 });
 

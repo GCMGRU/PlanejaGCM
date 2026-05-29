@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await iniciarPagina('/historico.html');
 
-    if (usuarioLogado.perfil !== 'DESENVOLVEDOR') {
-      mostrarMensagem('historicoMensagem', 'Acesso permitido apenas para desenvolvedores.', 'error');
+    if (!['DESENVOLVEDOR', 'ADMIN'].includes(usuarioLogado.perfil)) {
+      mostrarMensagem('historicoMensagem', 'Acesso não autorizado.', 'error');
       return;
     }
 
@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarHistorico();
   } catch (err) {
     mostrarMensagem('historicoMensagem', err.message, 'error');
+  } finally {
+    finalizarCarregamento();
   }
 });
 

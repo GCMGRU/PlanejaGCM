@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       'afterbegin',
       `<div class="message show error">${escapeHtml(err.message)}</div>`
     );
+  } finally {
+    finalizarCarregamento();
   }
 });
 
