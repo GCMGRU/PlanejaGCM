@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { dbQuery } = require('../db/pool');
 const { requireAuth, JWT_SECRET } = require('../middleware/auth');
 const { textoObrigatorio, erro } = require('./helpers');
+const { registrarLog } = require('../services/logs.service');
 
 const router = express.Router();
 
@@ -48,6 +49,13 @@ router.post('/login', async (req, res, next) => {
 
     res.cookie('token', token, cookieOptions());
 
+    registrarLog({
+      usuario: { id: user.id, nome: user.nome, usuario: user.usuario },
+      req,
+      acao: 'LOGIN',
+      descricao: `${user.nome} fez login`
+    });
+
     return res.ok({
       id: user.id,
       nome: user.nome,
@@ -77,6 +85,7 @@ router.post('/trocar-senha', requireAuth, async (req, res, next) => {
       [hash, req.user.id]
     );
 
+    registrarLog({ req, acao: 'TROCAR_SENHA', descricao: `${req.user.nome} alterou a própria senha` });
     res.ok(null, 'Senha alterada com sucesso.');
   } catch (err) {
     next(err);
@@ -84,6 +93,18 @@ router.post('/trocar-senha', requireAuth, async (req, res, next) => {
 });
 
 router.post('/logout', (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (token) {
+      const payload = require('jsonwebtoken').verify(token, require('../middleware/auth').JWT_SECRET);
+      require('../db/pool').dbQuery(
+        'SELECT id, nome, usuario FROM usuarios WHERE id = $1', [payload.id]
+      ).then(r => {
+        if (r.rows[0]) registrarLog({ usuario: r.rows[0], req, acao: 'LOGOUT', descricao: `${r.rows[0].nome} encerrou a sessão` });
+      }).catch(() => {});
+    }
+  } catch {}
+
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

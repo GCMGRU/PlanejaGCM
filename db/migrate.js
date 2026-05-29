@@ -85,6 +85,27 @@ async function migrate() {
     FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
   `);
 
+  await dbQuery(`
+    CREATE TABLE IF NOT EXISTS logs_sistema (
+      id            SERIAL PRIMARY KEY,
+      usuario_id    INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+      usuario_nome  VARCHAR(120),
+      usuario_login VARCHAR(80),
+      acao          VARCHAR(80) NOT NULL,
+      entidade      VARCHAR(60),
+      entidade_id   INTEGER,
+      descricao     TEXT,
+      ip            VARCHAR(45),
+      user_agent    TEXT,
+      criado_em     TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS idx_logs_criado_em  ON logs_sistema(criado_em DESC)`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS idx_logs_usuario_id ON logs_sistema(usuario_id)`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS idx_logs_acao       ON logs_sistema(acao)`);
+  await dbQuery(`CREATE INDEX IF NOT EXISTS idx_logs_entidade   ON logs_sistema(entidade, entidade_id)`);
+  console.log('Tabela logs_sistema: OK');
+
   console.log('Triggers: OK');
   console.log('Migração concluída.');
 }

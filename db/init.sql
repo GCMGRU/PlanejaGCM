@@ -214,6 +214,25 @@ DROP TRIGGER IF EXISTS trg_reunioes_atualizado_em ON reunioes;
 CREATE TRIGGER trg_reunioes_atualizado_em
 BEFORE UPDATE ON reunioes FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();
 
+CREATE TABLE IF NOT EXISTS logs_sistema (
+  id            SERIAL PRIMARY KEY,
+  usuario_id    INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  usuario_nome  VARCHAR(120),
+  usuario_login VARCHAR(80),
+  acao          VARCHAR(80) NOT NULL,
+  entidade      VARCHAR(60),
+  entidade_id   INTEGER,
+  descricao     TEXT,
+  ip            VARCHAR(45),
+  user_agent    TEXT,
+  criado_em     TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_logs_criado_em  ON logs_sistema(criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_logs_usuario_id ON logs_sistema(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_logs_acao       ON logs_sistema(acao);
+CREATE INDEX IF NOT EXISTS idx_logs_entidade   ON logs_sistema(entidade, entidade_id);
+
 -- Índices
 CREATE INDEX IF NOT EXISTS idx_projetos_status ON projetos(status);
 CREATE INDEX IF NOT EXISTS idx_projetos_prioridade ON projetos(prioridade);

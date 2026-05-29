@@ -33,6 +33,7 @@ const reunioesRoutes = require('./routes/reunioes.routes');
 const fontesProjetoRoutes = require('./routes/fontes-projeto.routes');
 const equipeProjetoRoutes = require('./routes/equipe-projeto.routes');
 const { requireAuth } = require('./middleware/auth');
+const { registrarLog } = require('./services/logs.service');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -83,6 +84,55 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   res.redirect('/login.html');
+});
+
+// Interceptor de logs — registra todas as operações mutantes bem-sucedidas
+function extrairEntidade(url) {
+  const p = url.replace(/^\/api/, '').split('?')[0];
+  const regras = [
+    [/\/projetos\/\d+\/modulos/,    'MODULO'],
+    [/\/projetos\/\d+\/equipe/,     'EQUIPE'],
+    [/\/projetos\/\d+\/pre-analise/,'RELATORIO'],
+    [/\/projetos\/\d+\/fontes/,     'FONTE'],
+    [/\/projetos/,                   'PROJETO'],
+    [/\/modulos\/\d+\/commits/,     'COMMIT'],
+    [/\/modulos/,                   'MODULO'],
+    [/\/ideias/,                    'IDEIA'],
+    [/\/reunioes/,                  'REUNIAO'],
+    [/\/usuarios/,                  'USUARIO'],
+    [/\/equipe/,                    'EQUIPE'],
+    [/\/pre-analise/,               'RELATORIO'],
+    [/\/fontes-projeto/,            'FONTE'],
+  ];
+  const entidade = (regras.find(([rx]) => rx.test(p)) || [])[1] || null;
+  const idMatch  = p.match(/\/(\d+)/);
+  return { entidade, entidadeId: idMatch ? Number(idMatch[1]) : null };
+}
+
+const ACAO_LABEL = { POST: 'CRIAR', PUT: 'EDITAR', PATCH: 'EDITAR', DELETE: 'EXCLUIR' };
+const VERBO      = { CRIAR: 'criou', EDITAR: 'editou', EXCLUIR: 'excluiu' };
+
+app.use('/api', (req, res, next) => {
+  const acao = ACAO_LABEL[req.method];
+  if (!acao) return next();
+
+  const origJson = res.json.bind(res);
+  res.json = function (body) {
+    if (body?.success !== false && req.user) {
+      const { entidade, entidadeId } = extrairEntidade(req.originalUrl);
+      const id = entidadeId || body?.data?.id || null;
+      const verbo = VERBO[acao] || acao.toLowerCase();
+      registrarLog({
+        req,
+        acao,
+        entidade,
+        entidadeId: id,
+        descricao: `${req.user.nome} ${verbo}${entidade ? ' ' + entidade.toLowerCase() : ''}${id ? ' #' + id : ''}`
+      });
+    }
+    return origJson(body);
+  };
+  next();
 });
 
 app.use('/api/auth', authRoutes);
